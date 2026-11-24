@@ -199,9 +199,12 @@ class StudioHTTPHandler(http.server.SimpleHTTPRequestHandler):
         else:
             self.send_error(404, "Endpoint not found")
 
+class ThreadedStudioServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
 def run_server(port=8090):
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("", port), StudioHTTPHandler) as httpd:
+    with ThreadedStudioServer(("", port), StudioHTTPHandler) as httpd:
         print(f"\n=======================================================")
         print(f"🎬 Statutory Kinetic Presentation Studio Running!")
         print(f"👉 Local URL: http://localhost:{port}/static/index.html")
