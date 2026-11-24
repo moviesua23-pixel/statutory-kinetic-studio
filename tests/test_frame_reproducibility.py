@@ -25,7 +25,7 @@ SAMPLE_PRESENTATION = {
                     "line_num": 1,
                     "sentence": "Mr. Murali remits the agreed monthly consideration of Rs 50,000 to Dr. Susan.",
                     "line_title": "Payment of Consideration",
-                    "duration_ms": 4500,
+                    "duration_ms": 5400,
                     "action_type": "money_transfer",
                     "action_payload": {
                         "from_actor": "Mr. Murali",
@@ -50,7 +50,7 @@ SAMPLE_PRESENTATION = {
                     "line_num": 1,
                     "sentence": "The court weighs direct natural damages against remote consequential losses.",
                     "line_title": "Assessment of Recoverable Damages",
-                    "duration_ms": 4500,
+                    "duration_ms": 5400,
                     "action_type": "balance_scale",
                     "action_payload": {
                         "left_weight": "Ordinary Direct Loss",
@@ -78,12 +78,102 @@ SAMPLE_PRESENTATION = {
                     "line_num": 1,
                     "sentence": "The court pronounces the binding legal ratio governing statutory breach.",
                     "line_title": "Ratio Decidendi Pronounced",
-                    "duration_ms": 4500,
+                    "duration_ms": 5400,
                     "action_type": "gavel_verdict",
                     "action_payload": {
                         "court_name": "SUPREME COURT OF INDIA",
                         "case_citation": "Hadley v. Baxendale Principle",
                         "ratio": "Only natural and proximate damages naturally arising from breach are recoverable."
+                    }
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "tab_title": "4. Breach Block",
+            "layout_archetype": "layout_hero_stage",
+            "layout_payload": {
+                "hero_headline": "Statutory Default Evaluation"
+            },
+            "lines": [
+                {
+                    "line_num": 1,
+                    "sentence": "Default in statutory compliance imposes strict liability.",
+                    "line_title": "Default Triggered",
+                    "duration_ms": 5400,
+                    "action_type": "breach_block",
+                    "action_payload": {
+                        "event_title": "Statutory Non-Compliance",
+                        "cause": "Failure to File Prescribed Return",
+                        "consequence": "Late Fee & Statutory Interest Levied"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "tab_title": "5. Financial Meter",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "financial_meter",
+                    "action_payload": {
+                        "min_val": 0,
+                        "max_val": 10000000,
+                        "current_val": 7500000,
+                        "threshold": 5000000
+                    }
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "tab_title": "6. Clock Limitation",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "clock_limitation",
+                    "action_payload": {
+                        "deadline": "3 Years",
+                        "is_barred": False
+                    }
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "tab_title": "7. Property Transfer",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "property_transfer",
+                    "action_payload": {
+                        "property_desc": "Commercial Asset",
+                        "status": "MUTATED"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "tab_title": "8. Condition Checklist",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "condition_checklist",
+                    "action_payload": {
+                        "conditions": [
+                            {"text": "Condition 1", "satisfied": True},
+                            {"text": "Condition 2", "satisfied": True}
+                        ]
                     }
                 }
             ]
@@ -99,9 +189,11 @@ class TestFrameReproducibility(unittest.TestCase):
         cls.page = cls.browser.new_page(viewport={"width": 1280, "height": 800})
         cls.page.goto("http://localhost:8090/static/index.html")
         cls.page.wait_for_selector("#stage_canvas", state="attached")
-        cls.page.evaluate("""(data) => {
+        cls.page.evaluate("""async (data) => {
             document.getElementById('animation_section').style.display = 'flex';
             window.PRESENTATION_PLAYER.init();
+            if (window.THEME) await window.THEME.ensureFontsLoaded();
+            if (document.fonts) await document.fonts.ready;
             window.PRESENTATION_PLAYER.loadPresentation(data);
             window.PRESENTATION_PLAYER.isPlaying = false;
         }""", SAMPLE_PRESENTATION)
@@ -134,18 +226,16 @@ class TestFrameReproducibility(unittest.TestCase):
 
     def test_settle_hold_65_and_100_pixel_identical(self):
         """Requirement 2: The 65% and 100% frames are pixel-identical inside mainStageRegion (excluding progress dots)."""
-        # For all 3 pilot engines (slide 0, 1, 2)
-        for slide_idx in [0, 1, 2]:
-            # Extract mainStageRegion pixels (x: 48, y: 96, w: 1184, h: 480)
+        # Test pilot, batch 1, and batch 2 engines (all 8 slides)
+        for slide_idx in range(len(SAMPLE_PRESENTATION["scenes"])):
+            # 65% of 5400ms is 3510ms, 100% is 5400ms
             img_stage_65 = self.page.evaluate(f"""() => {{
-                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 2925); // 65% of 4500ms
+                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 3510);
                 const canvas = document.getElementById('stage_canvas');
                 const ctx = canvas.getContext('2d');
-                // Create sub-canvas for mainStageRegion
                 const sub = document.createElement('canvas');
                 sub.width = 1184; sub.height = 480;
                 const sctx = sub.getContext('2d');
-                // Scale ratio between canvas backing store and 1280x720
                 const sx = canvas.width / 1280;
                 const sy = canvas.height / 720;
                 sctx.drawImage(canvas, 48 * sx, 96 * sy, 1184 * sx, 480 * sy, 0, 0, 1184, 480);
@@ -153,7 +243,7 @@ class TestFrameReproducibility(unittest.TestCase):
             }}""")
 
             img_stage_100 = self.page.evaluate(f"""() => {{
-                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 4500); // 100% of 4500ms
+                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 5400);
                 const canvas = document.getElementById('stage_canvas');
                 const ctx = canvas.getContext('2d');
                 const sub = document.createElement('canvas');
@@ -168,8 +258,44 @@ class TestFrameReproducibility(unittest.TestCase):
             self.assertEqual(
                 img_stage_65,
                 img_stage_100,
-                f"Slide {slide_idx}: mainStageRegion at 65% (2925ms) and 100% (4500ms) must be 100% pixel-identical"
+                f"Slide {slide_idx}: mainStageRegion at 65% (3510ms) and 100% (5400ms) must be 100% pixel-identical"
             )
+
+    def test_speed_change_continuity(self):
+        """Requirement 1: Changing speed mid-line keeps frame continuous and does not jump line index."""
+        result = self.page.evaluate("""() => {
+            const player = window.PRESENTATION_PLAYER;
+            player.switchSlide(0);
+            player.currentTimeMs = 2700; // mid-line at 50%
+            player.setSpeed(1.0);
+            player.render();
+
+            const img_before = document.getElementById('stage_canvas').toDataURL('image/png');
+            const lineIdx_before = player.currentSlideIdx;
+            const time_before = player.currentTimeMs;
+
+            // Change speed to 1.25x mid-line
+            player.setSpeed(1.25);
+            player.render();
+
+            const img_after = document.getElementById('stage_canvas').toDataURL('image/png');
+            const lineIdx_after = player.currentSlideIdx;
+            const time_after = player.currentTimeMs;
+
+            return {
+                img_equal: img_before === img_after,
+                lineIdx_before,
+                lineIdx_after,
+                time_before,
+                time_after,
+                speed: player.playbackSpeed
+            };
+        }""")
+
+        self.assertTrue(result["img_equal"], "Changing speed mid-line must produce identical frame at that instant")
+        self.assertEqual(result["lineIdx_before"], result["lineIdx_after"], "Line index must not jump on speed change")
+        self.assertEqual(result["time_before"], result["time_after"], "Timeline currentTimeMs must remain continuous")
+        self.assertEqual(result["speed"], 1.25, "Playback speed should be set to 1.25")
 
 if __name__ == '__main__':
     unittest.main()

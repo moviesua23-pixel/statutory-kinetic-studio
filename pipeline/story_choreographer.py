@@ -229,7 +229,7 @@ def validate_and_sanitize_screenplay(raw_json: Any, provision_text: str) -> Dict
                     "line_num": 1,
                     "sentence": "Let us examine this statutory provision in detail.",
                     "line_title": "Statutory Exposition",
-                    "duration_ms": 4500,
+                    "duration_ms": 5400,
                     "action_type": "contract_sign",
                     "action_payload": {
                         "title": data["section_code"],
@@ -297,7 +297,7 @@ def validate_and_sanitize_screenplay(raw_json: Any, provision_text: str) -> Dict
                 "line_num": 1,
                 "sentence": fallback_text,
                 "line_title": "Core Doctrine",
-                "duration_ms": 4500,
+                "duration_ms": 5400,
                 "action_type": "contract_sign",
                 "action_payload": {
                     "title": data["section_code"],
@@ -316,7 +316,7 @@ def validate_and_sanitize_screenplay(raw_json: Any, provision_text: str) -> Dict
                 act_type = "contract_sign"
             line["action_type"] = act_type
             line["line_num"] = l_idx + 1
-            line["duration_ms"] = int(line.get("duration_ms") or 4500)
+            line["duration_ms"] = max(int(line.get("duration_ms") or 5400), 5400)
             if not line.get("sentence"):
                 line["sentence"] = f"Sentence {l_idx + 1} explaining {data['core_doctrine']}."
             if not line.get("line_title"):

@@ -23,10 +23,10 @@
       const isSettle = p >= 0.65;
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
 
-      const title = payload.title || "Statutory Commercial Contract";
+      const title = payload.title || "Statutory Instrument / Agreement";
       const parties = payload.parties || "Party A & Party B";
-      const keyTerm = payload.key_term || "Lawful Object with Mutual Binding Consideration";
-      const stampText = payload.stamp_text || "SIGNED & REGISTERED";
+      const keyTerm = payload.key_term || "Binding Statutory Covenant & Conditions";
+      const stampText = payload.stamp_text || "VALID & BINDING";
 
       // Centered parchment document
       const docW = Math.min(520, bounds.w * 0.60);
@@ -69,16 +69,31 @@
       ctx.fillStyle = window.THEME.colors.accent.indigo.dark;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText("OFFICIAL DEED / AGREEMENT", docX + 44, docY + 23);
+      ctx.fillText(payload.document_header || "OFFICIAL INSTRUMENT / RECORD", docX + 44, docY + 23);
 
-      // Title & Parties
+      // Title & Parties with robust text truncation for long names
+      const maxDocTextW = docW - 48;
+      let displayTitle = title;
       ctx.font = window.THEME.typography.titleBold;
+      if (ctx.measureText(displayTitle).width > maxDocTextW) {
+        while (displayTitle.length > 8 && ctx.measureText(displayTitle + "…").width > maxDocTextW) {
+          displayTitle = displayTitle.slice(0, -1);
+        }
+        displayTitle += "…";
+      }
       ctx.fillStyle = themeColors.textPrimary;
-      ctx.fillText(title, docX + 24, docY + 76);
+      ctx.fillText(displayTitle, docX + 24, docY + 76);
 
       ctx.font = window.THEME.typography.body;
+      let displayParties = `Parties: ${parties}`;
+      if (ctx.measureText(displayParties).width > maxDocTextW) {
+        while (displayParties.length > 12 && ctx.measureText(displayParties + "…").width > maxDocTextW) {
+          displayParties = displayParties.slice(0, -1);
+        }
+        displayParties += "…";
+      }
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText(`Parties: ${parties}`, docX + 24, docY + 104);
+      ctx.fillText(displayParties, docX + 24, docY + 104);
 
       // Real text lines placeholder
       ctx.strokeStyle = themeColors.bgSubtle;
@@ -99,11 +114,19 @@
       ctx.fill();
       ctx.stroke();
 
+      const maxKeyTermW = docW - 72;
+      let displayKeyTerm = `KEY TERM: ${keyTerm}`;
       ctx.font = window.THEME.typography.captionBold;
+      if (ctx.measureText(displayKeyTerm).width > maxKeyTermW) {
+        while (displayKeyTerm.length > 12 && ctx.measureText(displayKeyTerm + "…").width > maxKeyTermW) {
+          displayKeyTerm = displayKeyTerm.slice(0, -1);
+        }
+        displayKeyTerm += "…";
+      }
       ctx.fillStyle = window.THEME.colors.accent.amber.dark;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(`KEY TERM: ${keyTerm}`, docX + 36, docY + 234);
+      ctx.fillText(displayKeyTerm, docX + 36, docY + 234);
 
       // 2. Animated Signature Trace (Path2D stroke-dash reveal)
       const sigStartX = docX + 40;
@@ -164,12 +187,17 @@
         ctx.stroke();
 
         // Stamp Text
-        ctx.font = "800 8.5px 'JetBrains Mono', monospace";
+        ctx.font = "800 8px 'JetBrains Mono', monospace";
         ctx.fillStyle = "#FFFFFF";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("SEALED", 0, -6);
-        ctx.fillText("VALID", 0, 6);
+        const stampWords = stampText.split("&").map(s => s.trim());
+        if (stampWords.length >= 2) {
+          ctx.fillText(stampWords[0], 0, -6);
+          ctx.fillText(stampWords[1], 0, 6);
+        } else {
+          ctx.fillText(stampText, 0, 0);
+        }
 
         ctx.restore();
       }
@@ -189,10 +217,10 @@
       const isSettle = p >= 0.65;
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
 
-      const partyA = payload.party_a || "Promisor (Party A)";
-      const partyB = payload.party_b || "Promisee (Party B)";
-      const consentRule = payload.consent_rule || "Consensus ad Idem (Section 10 & 13)";
-      const statusText = payload.status || "Mutual Free Consent Established";
+      const partyA = payload.party_a || "Party A (Initiator / Claimant)";
+      const partyB = payload.party_b || "Party B (Counterparty / Assessee)";
+      const consentRule = payload.consent_rule || payload.rule || "Statutory Mutual Assent / Concurrence";
+      const statusText = payload.status || "Statutory Criteria Satisfied";
 
       const cardW = Math.min(260, bounds.w * 0.30);
       const cardH = 140;
@@ -224,13 +252,21 @@
       ctx.fillStyle = themeColors.textPrimary;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(partyA, leftX + 54, cardY + 36);
+      const maxPartyCardW = cardW - 70;
+      let dispPartyA = partyA;
+      if (ctx.measureText(dispPartyA).width > maxPartyCardW) {
+        while (dispPartyA.length > 3 && ctx.measureText(dispPartyA + "…").width > maxPartyCardW) {
+          dispPartyA = dispPartyA.slice(0, -1);
+        }
+        dispPartyA += "…";
+      }
+      ctx.fillText(dispPartyA, leftX + 54, cardY + 36);
 
       ctx.font = window.THEME.typography.body;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText("Offeror / Proposal Expressed", leftX + 24, cardY + 76);
+      ctx.fillText(payload.party_a_role || "Initiator / Offeror", leftX + 24, cardY + 76);
 
-      window.SHARED_DRAW.pill(ctx, "COMPETENT PARTY", leftX + 24, cardY + 102, {
+      window.SHARED_DRAW.pill(ctx, payload.party_a_badge || "ELIGIBLE ENTITY", leftX + 24, cardY + 102, {
         fill: window.THEME.colors.accent.indigo.light,
         textFill: window.THEME.colors.accent.indigo.main,
         icon: "shield"
@@ -245,13 +281,20 @@
       ctx.font = window.THEME.typography.titleBold;
       ctx.fillStyle = themeColors.textPrimary;
       ctx.textAlign = "left";
-      ctx.fillText(partyB, rightX + 54, cardY + 36);
+      let dispPartyB = partyB;
+      if (ctx.measureText(dispPartyB).width > maxPartyCardW) {
+        while (dispPartyB.length > 3 && ctx.measureText(dispPartyB + "…").width > maxPartyCardW) {
+          dispPartyB = dispPartyB.slice(0, -1);
+        }
+        dispPartyB += "…";
+      }
+      ctx.fillText(dispPartyB, rightX + 54, cardY + 36);
 
       ctx.font = window.THEME.typography.body;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText("Offeree / Unconditional Assent", rightX + 24, cardY + 76);
+      ctx.fillText(payload.party_b_role || "Offeree / Concurring Party", rightX + 24, cardY + 76);
 
-      window.SHARED_DRAW.pill(ctx, "FREE CONSENT", rightX + 24, cardY + 102, {
+      window.SHARED_DRAW.pill(ctx, payload.party_b_badge || "MUTUAL ASSENT", rightX + 24, cardY + 102, {
         fill: window.THEME.colors.accent.indigo.light,
         textFill: window.THEME.colors.accent.indigo.main,
         icon: "shield"
@@ -429,7 +472,7 @@
 
       // 5. Settled Delivery Badge
       if (isSettle) {
-        window.SHARED_DRAW.pill(ctx, `DELIVERED & TRANSFERRED: ${cargo}`, bounds.x + (bounds.w - 380) / 2, bounds.y + bounds.h - 50, {
+        window.SHARED_DRAW.pill(ctx, payload.delivery_status || `DELIVERED & TRANSFERRED: ${cargo}`, bounds.x + (bounds.w - 380) / 2, bounds.y + bounds.h - 50, {
           fill: window.THEME.colors.accent.emerald.light,
           textFill: window.THEME.colors.accent.emerald.main,
           stroke: window.THEME.colors.accent.emerald.border,
@@ -452,9 +495,9 @@
       const isSettle = p >= 0.65;
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
 
-      const eventTitle = payload.event_title || "Breach of Contract / Delivery Failure";
-      const cause = payload.cause || "Default in Performance under Section 73";
-      const consequence = payload.consequence || "Liability for Direct Natural Damages Triggered";
+      const eventTitle = payload.event_title || "Statutory Default / Non-Compliance";
+      const cause = payload.cause || "Default under Statutory Provision";
+      const consequence = payload.consequence || "Statutory Liability Imposed";
 
       const centerX = bounds.x + bounds.w / 2;
       const centerY = bounds.y + bounds.h * 0.45;
@@ -514,9 +557,13 @@
         ctx.fill();
       }
 
-      // 3. Alert Icon with Slow Non-Strobe Pulse (accessibility safe)
+      // 3. Alert Icon with Deterministic Pulse (accessibility safe)
+      // Pulse freezes static (pulseAlpha = 1.0) during settle hold (>= 65%) or under prefers-reduced-motion
       const isReduced = window.THEME.prefersReducedMotion();
-      const pulseAlpha = isReduced ? 0.9 : 0.7 + (Math.sin(performance.now() * 0.003) * 0.25);
+      let pulseAlpha = 1.0;
+      if (!isSettle && !isReduced) {
+        pulseAlpha = 0.75 + (Math.sin(effectiveP * Math.PI * 4) * 0.25);
+      }
 
       ctx.save();
       ctx.globalAlpha = pulseAlpha;

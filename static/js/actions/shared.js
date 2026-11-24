@@ -48,9 +48,22 @@
       const h = 22;
       const w = metrics.width + (padX * 2) + (hasIcon ? (iconSize + 4) : 0);
 
-      const fill = options.fill || window.THEME.colors.accent.indigo.light;
-      const textFill = options.textFill || window.THEME.colors.accent.indigo.main;
-      const stroke = options.stroke || window.THEME.colors.accent.indigo.border;
+      let fill = options.fill || window.THEME.colors.accent.indigo.light;
+      let textFill = options.textFill || window.THEME.colors.accent.indigo.main;
+      let stroke = options.stroke || window.THEME.colors.accent.indigo.border;
+
+      // Dark mode contrast enhancement for semantic tint pills
+      if (window.THEME && window.THEME.mode === "dark") {
+        if (fill === window.THEME.colors.accent.emerald.light) fill = "rgba(5, 150, 105, 0.22)";
+        else if (fill === window.THEME.colors.accent.indigo.light) fill = "rgba(79, 70, 229, 0.22)";
+        else if (fill === window.THEME.colors.accent.amber.light) fill = "rgba(217, 119, 6, 0.22)";
+        else if (fill === window.THEME.colors.accent.crimson.light) fill = "rgba(220, 38, 38, 0.22)";
+
+        if (textFill === window.THEME.colors.accent.emerald.main) textFill = "#34D399";
+        else if (textFill === window.THEME.colors.accent.indigo.main) textFill = "#818CF8";
+        else if (textFill === window.THEME.colors.accent.amber.main) textFill = "#FBBF24";
+        else if (textFill === window.THEME.colors.accent.crimson.main) textFill = "#F87171";
+      }
 
       ctx.fillStyle = fill;
       ctx.strokeStyle = stroke;
@@ -76,7 +89,29 @@
     },
 
     /**
-     * Draws high-contrast tabular number counter (e.g. currency amounts)
+     * Requirement 5: Universal Indian number grouping (en-IN, e.g. ₹99,99,99,999)
+     */
+    formatIndianNumber(num) {
+      if (num === null || num === undefined || isNaN(Number(num))) return String(num ?? "");
+      return Number(num).toLocaleString("en-IN");
+    },
+
+    formatIndianCurrency(amount, symbol = "₹") {
+      if (typeof amount === "string") {
+        const numClean = amount.replace(/[^0-9.]/g, "");
+        if (numClean && !isNaN(Number(numClean))) {
+          return `${symbol}${Number(numClean).toLocaleString("en-IN")}`;
+        }
+        return amount;
+      }
+      if (typeof amount === "number") {
+        return `${symbol}${amount.toLocaleString("en-IN")}`;
+      }
+      return `${symbol}${amount}`;
+    },
+
+    /**
+     * Draws high-contrast tabular number counter (e.g. currency amounts) with Indian grouping
      */
     counter(ctx, currentVal, targetVal, x, y, options = {}) {
       ctx.save();
@@ -85,7 +120,14 @@
       ctx.textAlign = options.align || "center";
       ctx.textBaseline = options.baseline || "middle";
 
-      const text = options.formatter ? options.formatter(currentVal) : String(currentVal);
+      let text;
+      if (options.formatter) {
+        text = options.formatter(currentVal);
+      } else if (typeof currentVal === "number") {
+        text = currentVal.toLocaleString("en-IN");
+      } else {
+        text = String(currentVal);
+      }
       ctx.fillText(text, x, y);
       ctx.restore();
     },

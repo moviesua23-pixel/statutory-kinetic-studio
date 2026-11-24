@@ -19,15 +19,15 @@
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
       const enterT = phaseState.enterT;
 
-      const fromActor = payload.from_actor || "Payer";
-      const toActor = payload.to_actor || "Receiver";
+      const fromActor = payload.from_actor || "Payer / Assessee";
+      const toActor = payload.to_actor || "Receiver / Revenue Authority";
       const amountStr = payload.amount || "₹50,000";
-      const desc = payload.description || "Lawful Consideration";
+      const desc = payload.description || "Statutory Consideration / Payment";
 
       // Parse numerical value for tabular count-up
       const numMatch = amountStr.replace(/[^0-9]/g, "");
       const targetVal = numMatch ? parseInt(numMatch, 10) : 50000;
-      const currencySymbol = amountStr.startsWith("₹") ? "₹" : "$";
+      const currencySymbol = amountStr.startsWith("₹") ? "₹" : (amountStr.startsWith("$") ? "$" : "₹");
 
       // Compute geometric positions relative to bounds
       const cardW = Math.min(220, bounds.w * 0.28);
@@ -68,7 +68,7 @@
 
       ctx.font = window.THEME.typography.caption;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText("Remitting Consideration", leftX + 24, cardY + 74);
+      ctx.fillText(payload.from_action || "Remitting Statutory Payment", leftX + 24, cardY + 74);
 
       // 2. Receiver Card (Right)
       window.SHARED_DRAW.card(ctx, rightX, cardY, cardW, cardH, {
@@ -90,7 +90,7 @@
 
       // Status under Receiver: Counts up or shows "Received"
       if (isSettle) {
-        window.SHARED_DRAW.pill(ctx, "RECEIVED & CREDITED", rightX + 24, cardY + 64, {
+        window.SHARED_DRAW.pill(ctx, payload.settled_status || "RECEIVED & CREDITED", rightX + 24, cardY + 64, {
           fill: window.THEME.colors.accent.emerald.light,
           textFill: window.THEME.colors.accent.emerald.main,
           stroke: window.THEME.colors.accent.emerald.border,
@@ -165,7 +165,7 @@
       ctx.font = window.THEME.typography.monoStat;
       ctx.fillStyle = themeColors.textPrimary;
       ctx.textBaseline = "alphabetic";
-      ctx.fillText(`${currencySymbol} ${currentCount.toLocaleString()}`, counterCardX + counterCardW / 2, counterCardY + 54);
+      ctx.fillText(`${currencySymbol} ${currentCount.toLocaleString('en-IN')}`, counterCardX + counterCardW / 2, counterCardY + 54);
 
       ctx.restore();
     },
@@ -182,11 +182,11 @@
       const isSettle = p >= 0.65;
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
 
-      const leftWeight = payload.left_weight || "Direct / Ordinary Loss";
-      const leftAmount = payload.left_amount || "₹1,50,000";
-      const rightWeight = payload.right_weight || "Remote / Consequential Loss";
-      const rightAmount = payload.right_amount || "₹10,00,000";
-      const verdict = payload.verdict || "Scale Tilts: Only Natural & Direct Loss Recoverable";
+      const leftWeight = payload.left_weight || "Primary Statutory Factor / Claim";
+      const leftAmount = window.SHARED_DRAW ? window.SHARED_DRAW.formatIndianCurrency(payload.left_amount || "₹1,50,000") : (payload.left_amount || "₹1,50,000");
+      const rightWeight = payload.right_weight || "Opposing Claim / Statutory Deduction";
+      const rightAmount = window.SHARED_DRAW ? window.SHARED_DRAW.formatIndianCurrency(payload.right_amount || "₹10,00,000") : (payload.right_amount || "₹10,00,000");
+      const verdict = payload.verdict || "Statutory Balance of Considerations Established";
 
       const centerX = bounds.x + bounds.w / 2;
       const centerY = bounds.y + bounds.h * 0.44;
@@ -578,7 +578,7 @@
       if (line) ctx.fillText(line, decreeX + 24, lineY);
 
       // Valid stamp badge
-      window.SHARED_DRAW.pill(ctx, "FINAL & BINDING", decreeX + 24, decreeY + decreeH - 34, {
+      window.SHARED_DRAW.pill(ctx, payload.badge || "FINAL & BINDING", decreeX + 24, decreeY + decreeH - 34, {
         fill: window.THEME.colors.accent.emerald.light,
         textFill: window.THEME.colors.accent.emerald.main,
         stroke: window.THEME.colors.accent.emerald.border,

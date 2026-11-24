@@ -35,7 +35,7 @@ class TestChoreographerSchema(unittest.TestCase):
         self.assertIn("layout_payload", sc)
         self.assertIn("left_label", sc["layout_payload"])
         self.assertIn("right_label", sc["layout_payload"])
-        self.assertEqual(sc["lines"][0]["duration_ms"], 4500)
+        self.assertEqual(sc["lines"][0]["duration_ms"], 5400)
 
     def test_sequential_pipeline_payload_healing(self):
         raw = {
@@ -96,11 +96,15 @@ class TestChoreographerSchema(unittest.TestCase):
         self.assertIn("ratio_headline", sc["layout_payload"])
 
     def test_settle_hold_calculation(self):
-        # 35% of 4500ms is 1575ms >= 1500ms
-        line_duration_ms = 4500
+        # Line duration >= 5400ms guarantees real-time hold >= 1500ms even at 1.25x speed:
+        # (5400 * 0.35) / 1.25 = 1512ms >= 1500ms
+        line_duration_ms = 5400
         settle_ratio = 0.35
-        hold_time_ms = line_duration_ms * settle_ratio
-        self.assertGreaterEqual(hold_time_ms, 1500, "Settle hold time must be at least 1.5 seconds")
+        nominal_hold_ms = line_duration_ms * settle_ratio
+        real_time_hold_1x = nominal_hold_ms / 1.0
+        real_time_hold_1_25x = nominal_hold_ms / 1.25
+        self.assertGreaterEqual(real_time_hold_1x, 1500, "1.0x real hold must be >= 1.5s")
+        self.assertGreaterEqual(real_time_hold_1_25x, 1500, "1.25x real hold must be >= 1.5s")
 
 if __name__ == '__main__':
     unittest.main()

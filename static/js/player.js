@@ -7,7 +7,7 @@
 (function() {
   const LOGICAL_WIDTH = 1280;
   const LOGICAL_HEIGHT = 720;
-  const DEFAULT_LINE_DURATION_MS = 4500;
+  const DEFAULT_LINE_DURATION_MS = 5400;
   const SLIDE_CROSSFADE_MS = 400;
 
   class PresentationPlayer {
@@ -180,13 +180,11 @@
     }
 
     getEffectiveLineDuration(line) {
+      // Requirement 1 & 6: Fixed nominal timeline. Playback speed applies ONLY to clock delta rate.
+      // Nominal line duration is fixed at >= 5400ms so that at 1.25x speed,
+      // real-time hold is (5400 * 0.35) / 1.25 = 1512ms >= 1.5s.
       const baseDur = line?.duration_ms || DEFAULT_LINE_DURATION_MS;
-      // Requirement 4: Hold duration must be >= 1.5s in real time even at 1.25x speed.
-      // Settle hold ratio = 0.35.
-      // Real-time hold = (nominalDuration * 0.35) / playbackSpeed >= 1500ms
-      // => nominalDuration >= (1500 * playbackSpeed) / 0.35
-      const minRequiredNominal = (1500 * (this.playbackSpeed || 1.0)) / 0.35;
-      return Math.max(baseDur, Math.ceil(minRequiredNominal));
+      return Math.max(baseDur, DEFAULT_LINE_DURATION_MS);
     }
 
     getSlideDurationMs(slide) {
