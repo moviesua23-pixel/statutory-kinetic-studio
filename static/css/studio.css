@@ -326,11 +326,12 @@ body {
   width: 100%;
   display: flex;
   justify-content: center;
-  background: #FFFFFF;
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
+  background: #0F172A;
+  border: 1.5px solid #1E293B;
+  border-radius: 16px;
+  box-shadow: 0 20px 48px -12px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.06);
   overflow: hidden;
+  transition: box-shadow 0.2s ease;
 }
 #stage_canvas {
   width: 100%;
@@ -340,6 +341,7 @@ body {
   background: #FFFFFF;
   display: block;
   cursor: pointer;
+  border-radius: 14px;
 }
 
 /* Narration & Karaoke Bar */
