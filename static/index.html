@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statutory Kinetic Presentation Studio · CA Education Pipeline</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/css/studio.css">
+  
+  <!-- Vector Shapes & Layout Libraries -->
+  <script src="/static/js/colorful_shapes_library.js"></script>
+  <script src="/static/js/layout_engine.js"></script>
+  <script src="/static/js/presentation_player.js"></script>
+  <script src="/static/js/studio.js"></script>
+</head>
+<body>
+
+  <div class="studio-container">
+
+    <!-- Top Studio Header -->
+    <header class="studio-header">
+      <div class="header-left">
+        <span class="logo-badge">KINETIC STUDIO</span>
+        <div>
+          <h1 class="studio-title">Statutory Kinetic Presentation Studio</h1>
+          <p style="font-size:12px; font-weight:600; color:var(--text-muted); margin-top:2px;">
+            Paste Tax Provisions • 2-Phase Story Screenplay • Gemini Expressive Voice (Aoede) • Live Synchronized Output
+          </p>
+        </div>
+      </div>
+      <div class="header-right">
+        <!-- Text Scale Controls -->
+        <div style="display:flex; align-items:center; gap:4px; background:#F8FAFC; border:1.5px solid var(--border); padding:3px 8px; border-radius:8px;">
+          <span style="font-size:11.5px; font-weight:800; color:#475569; margin-right:2px;">🔠 Text:</span>
+          <button class="font-zoom-btn" onclick="PRESENTATION_PLAYER.setFontScale(1.0, this)" title="Standard Font">100%</button>
+          <button class="font-zoom-btn active" onclick="PRESENTATION_PLAYER.setFontScale(1.15, this)" title="15% Prominent Font">+15%</button>
+          <button class="font-zoom-btn" onclick="PRESENTATION_PLAYER.setFontScale(1.30, this)" title="30% Extra Large Font">+30%</button>
+        </div>
+        <a href="https://github.com/moviesua23-pixel/statutory-kinetic-studio" target="_blank" class="btn-action" style="text-decoration:none; display:flex; align-items:center; gap:6px;">
+          <span>⭐</span> GitHub Repository
+        </a>
+      </div>
+    </header>
+
+    <!-- INPUT & WORKFLOW CONSOLE SECTION -->
+    <section class="section-panel" id="input_section">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📥</span> 1. Statutory Provision & Scenario Input
+        </div>
+        <span style="font-size:11.5px; font-weight:700; color:var(--text-muted);">
+          Supports Bare Acts, Rules, Circulars & Practical Dispute Scenarios
+        </span>
+      </div>
+
+      <!-- Presets Row -->
+      <div class="presets-container">
+        <span class="preset-tag">Quick Presets:</span>
+        <button class="preset-chip" onclick="selectPreset('50c_sdv')">🏠 § 50C Deemed SDV & 110% Safe Harbor</button>
+        <button class="preset-chip" onclick="selectPreset('45_2_conversion')">📈 § 45(2) Stock-in-Trade Conversion</button>
+        <button class="preset-chip" onclick="selectPreset('54_two_flats')">🏢 § 54 Combining Two Flats (Ananda Basappa)</button>
+        <button class="preset-chip" onclick="selectPreset('54ec_bonds')">🛡️ § 54EC REC/NHAI Bonds ₹50L Cap</button>
+        <button class="preset-chip" onclick="selectPreset('gst_16_2_itc')">📦 GST § 16(2) Four ITC Conditions</button>
+      </div>
+
+      <!-- Textarea for Pasting Statutory Provision -->
+      <textarea id="provision_input" class="provision-textarea" placeholder="Paste any tax law statutory provision, section text, notification, or case law dispute here..."></textarea>
+
+      <!-- Input Controls Row -->
+      <div class="inputs-row">
+        <input type="text" id="topic_input" class="input-field" placeholder="Topic title or Section code (e.g. Section 50C & Section 54EC)...">
+        
+        <select id="voice_select" class="voice-select" title="Select Gemini Expressive Voice">
+          <option value="Aoede" selected>Aoede (Warm Teacher - Gemini Expressive)</option>
+          <option value="Fenrir">Fenrir (Authoritative Legal Voice)</option>
+          <option value="Puck">Puck (Energetic Expressive Voice)</option>
+          <option value="Charon">Charon (Calm Deep Voice)</option>
+        </select>
+
+        <button id="btn_generate" class="btn-generate" onclick="triggerPresentationGeneration()">
+          <span>⚡</span> Generate 2-Phase Presentation
+        </button>
+      </div>
+
+      <!-- Live Animated Workflow Stepper -->
+      <div class="workflow-stepper">
+        <div class="step-item" id="step_1">
+          <span class="step-icon">○</span> 1. 2-Phase Story Choreography
+        </div>
+        <div class="step-item" id="step_2">
+          <span class="step-icon">○</span> 2. Expressive Voice Synthesis
+        </div>
+        <div class="step-item" id="step_3">
+          <span class="step-icon">○</span> 3. Acoustic Timing Analysis
+        </div>
+        <div class="step-item" id="step_4">
+          <span class="step-icon">○</span> 4. Layout & Shapes Sync
+        </div>
+        <div class="step-item" id="step_5">
+          <span class="step-icon">○</span> 5. Presentation Ready
+        </div>
+      </div>
+    </section>
+
+    <!-- OUTPUT PRESENTATION STUDIO SECTION -->
+    <section class="section-panel" id="output_section">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🎬</span> 2. Synchronized Kinetic Presentation Output
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="btn-action" onclick="downloadPresentationJSON()">⬇ Download JSON</button>
+        </div>
+      </div>
+
+      <!-- Scene Tabs Bar (6 Slides) -->
+      <div class="scene-tabs-bar" id="scene_tabs">
+        <button class="scene-tab-btn active phase-story">📖 Slide 1: Asset Origin</button>
+        <button class="scene-tab-btn phase-story">📖 Slide 2: The Deal</button>
+        <button class="scene-tab-btn phase-statute">⚖️ Slide 3: Safe Harbor Scale</button>
+        <button class="scene-tab-btn phase-statute">🛡️ Slide 4: Reinvestment Shield</button>
+        <button class="scene-tab-btn phase-statute">📊 Slide 5: Computation Ladder</button>
+        <button class="scene-tab-btn phase-statute">🎓 Slide 6: Exam Rules</button>
+      </div>
+
+      <!-- 1000x500 Kinetic Stage Canvas -->
+      <div class="canvas-wrapper">
+        <canvas id="stage_canvas" width="1000" height="500" onclick="PRESENTATION_PLAYER.togglePlay()"></canvas>
+      </div>
+
+      <!-- Teacher Voice Narration & Real-time Karaoke Bar -->
+      <div class="narration-panel">
+        <div class="narration-meta">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="scene_phase_badge" class="badge-mono" style="background:#D97706; color:#FFFFFF;">📖 PHASE 1: STORY EXPOSITION</span>
+            <span id="scene_tag_label" style="font-size:12px; font-weight:800; color:var(--text);">SLIDE 1</span>
+          </div>
+          <div id="scene_story_ref" style="font-size:11.5px; font-weight:800; color:#B45309; display:none;"></div>
+          <span style="font-size:11px; font-weight:700; color:#1E40AF; background:#EFF6FF; padding:3px 8px; border-radius:4px; border:1px solid #BFDBFE;">
+            ✨ Gemini Expressive Voice (Aoede) • Word Karaoke Sync
+          </span>
+        </div>
+        <div class="narration-text" id="narration_text">
+          Paste a tax provision above and click 'Generate 2-Phase Presentation' to start the studio pipeline...
+        </div>
+      </div>
+
+      <!-- Audio Transport Controls -->
+      <div class="controls-panel">
+        <div class="scrubber-row">
+          <input type="range" class="timeline-slider" id="timeline_slider" min="0" max="10000" step="50" value="0" oninput="PRESENTATION_PLAYER.seekTo(this.value)">
+          <div class="time-label" id="time_display">00:00.0 / 00:10.0</div>
+        </div>
+        <div class="buttons-row">
+          <div style="display:flex; gap:6px;">
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.prevSlide()">◀ Prev Slide</button>
+            <button class="btn-action primary" id="btn_play_pause" onclick="PRESENTATION_PLAYER.togglePlay()">▶ Play Animation</button>
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.nextSlide()">Next Slide ▶</button>
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.seekTo(0)">⏮ Restart</button>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <span style="font-size:12px; font-weight:700; color:var(--emerald); display:flex; align-items:center; gap:4px;">
+              ● Audio-Visual Synchronization Active
+            </span>
+          </div>
+        </div>
+        <audio id="voice_audio_player" preload="auto"></audio>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>

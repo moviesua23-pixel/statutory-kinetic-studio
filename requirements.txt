@@ -1,0 +1,5 @@
+google-genai>=0.1.0
+pydub>=0.25.1
+gTTS>=2.5.0
+pytest>=7.0.0
+requests>=2.28.0
