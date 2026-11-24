@@ -172,6 +172,37 @@
     sparkle.quadraticCurveTo(12, 12, 3, 12);
     sparkle.quadraticCurveTo(12, 12, 12, 3);
     ICON_PATHS["sparkle"] = sparkle;
+
+    // 19. Lock / Vault / Security Padlock
+    const lock = new Path2D();
+    lock.rect(5, 10, 14, 11);
+    lock.moveTo(8, 10); lock.lineTo(8, 6);
+    lock.arc(12, 6, 4, Math.PI, 0, false);
+    lock.lineTo(16, 10);
+    // Keyhole
+    lock.moveTo(12, 14); lock.arc(12, 14, 1.5, 0, Math.PI * 2);
+    lock.moveTo(12, 15.5); lock.lineTo(12, 18);
+    ICON_PATHS["lock"] = lock;
+
+    // 20. Mail / Legal Notice / Envelope
+    const mail = new Path2D();
+    mail.rect(3, 5, 18, 14);
+    mail.moveTo(3, 6); mail.lineTo(12, 13); mail.lineTo(21, 6);
+    ICON_PATHS["mail"] = mail;
+
+    // 21. Users / Corporate Board / Collective Members
+    const users = new Path2D();
+    users.arc(9, 7, 3, 0, Math.PI * 2);
+    users.moveTo(3, 18); users.quadraticCurveTo(9, 13, 15, 18);
+    users.arc(17, 7, 2.5, 0, Math.PI * 2);
+    users.moveTo(15, 16); users.quadraticCurveTo(18, 13, 21, 16);
+    ICON_PATHS["users"] = users;
+
+    // 22. Trending Up / Quantum Growth
+    const trUp = new Path2D();
+    trUp.moveTo(2, 17); trUp.lineTo(8.5, 10.5); trUp.lineTo(13.5, 15.5); trUp.lineTo(22, 7);
+    trUp.moveTo(16, 7); trUp.lineTo(22, 7); trUp.lineTo(22, 13);
+    ICON_PATHS["trendingUp"] = trUp;
   }
 
   // Pre-initialize

@@ -106,5 +106,23 @@ class TestChoreographerSchema(unittest.TestCase):
         self.assertGreaterEqual(real_time_hold_1x, 1500, "1.0x real hold must be >= 1.5s")
         self.assertGreaterEqual(real_time_hold_1_25x, 1500, "1.25x real hold must be >= 1.5s")
 
+    def test_line_duration_accounts_for_speech_length(self):
+        """Requirement 1: Line duration must dynamically scale for long narration to preserve >= 1.5s hold."""
+        long_sentence = "This is an extensive statutory teacher explanation breaking down each condition of the act thoroughly with all thirty words included to test the narration length accounting system."
+        raw = {
+            "act_name": "GST Act",
+            "section_code": "Section 16",
+            "scenes": [{
+                "id": 1,
+                "lines": [{"sentence": long_sentence, "action_type": "condition_checklist"}]
+            }]
+        }
+        sanitized = validate_and_sanitize_screenplay(raw, "")
+        line = sanitized["scenes"][0]["lines"][0]
+        # 30 words * 360ms = 10,800ms speech. Duration needed = 10800 / 0.65 = 16,615ms
+        self.assertGreaterEqual(line["duration_ms"], 10800 + 1890)
+        hold_ms = line["duration_ms"] * 0.35
+        self.assertGreaterEqual(hold_ms, 1890, "Hold time must be >= 1890ms")
+
 if __name__ == '__main__':
     unittest.main()

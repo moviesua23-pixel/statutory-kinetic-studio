@@ -131,6 +131,9 @@
         this.mode = mode;
       }
     },
+    setTheme(mode) {
+      this.setMode(mode);
+    },
 
     // Check prefers-reduced-motion
     prefersReducedMotion() {

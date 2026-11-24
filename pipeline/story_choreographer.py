@@ -36,17 +36,17 @@ SUPPORTED KINETIC ACTION TYPES (16 SPECIALIZED ENGINES):
 6. "balance_scale": Balancing rights vs duties, ordinary vs remote losses, burden of proof, defenses.
    - action_payload: {"left_weight": "Claim A / Ordinary Loss", "left_amount": "₹1,50,000", "right_weight": "Claim B / Remote Loss", "right_amount": "₹10,00,000", "verdict": "Scale Tilts: Only Natural Loss Allowed"}
 
-7. "financial_meter": Business profits, losses, damages quantification, revenue impact.
-   - action_payload: {"metric_name": "Net Profit / Loss Impact", "direction": "down" or "up", "value": "(-) ₹3,00,000", "detail": "Quantified damage figure"}
+7. "financial_meter": Business profits, statutory thresholds, turnover, fines, damages quantum.
+   - action_payload: {"title": "Corporate Threshold Metric", "numeric_value": 75000000, "max_value": 150000000, "min_value": 0, "threshold": 50000000, "direction": "gain" or "loss" or "threshold", "unit": "₹", "status": "Threshold Exceeded"}
 
 8. "gavel_verdict": Judicial verdicts, landmark court rulings, final arbitrator award, ratio decidendi.
-   - action_payload: {"court_name": "Landmark Ratio", "case_citation": "Case Law Citation", "ratio": "Legal principle established"}
+   - action_payload: {"court_name": "Landmark Ratio", "case_citation": "Case Law Citation", "ratio": "Legal principle established", "badge": "FINAL & BINDING"}
 
 9. "clock_limitation": Limitation periods, time is essence of contract, deadline expiry, statutory delays.
-   - action_payload: {"deadline_title": "Limitation Period / Time of Essence", "time_limit": "3 Years from Breach", "status": "Within Statutory Period / Barred by Limitation"}
+   - action_payload: {"act_title": "Limitation Period", "deadline": "Within 3 Years", "elapsed": 2, "limit": 3, "unit": "Years", "is_barred": false, "verdict": "Timely Instituted"}
 
 10. "property_transfer": Real estate conveyance, title transfer, land parcel handover, possession of premises.
-    - action_payload: {"property_name": "Commercial Building / Land Parcel", "transferor": "Owner Name", "transferee": "Purchaser Name", "title_status": "Absolute Title Conveyed"}
+    - action_payload: {"property_desc": "Commercial Premises", "transferor": "Vendor", "transferee": "Purchaser", "deed_title": "Registered Conveyance Deed", "status": "TITLE CONVEYED"}
 
 11. "condition_checklist": Statutory essential ingredients, compliance criteria, 3-step or 4-step tests.
     - action_payload: {"criteria": ["1. Competent Parties", "2. Free Consent", "3. Lawful Consideration", "4. Lawful Object"], "active_step": 2, "compliance_status": "All Conditions Fulfilled"}
@@ -194,6 +194,19 @@ VALID_ACTIONS = [
     "waterfall_flow"
 ]
 
+def estimate_speech_duration_ms(sentence: str) -> int:
+    """
+    Requirement 1: Ensures nominal line duration strictly accounts for speech length,
+    guaranteeing narration finishes within the PERFORM phase (0-65%) and leaves a >= 1.5s
+    real-time hold in SETTLE (65-100%).
+    Standard educational speech rate is ~360ms per word.
+    """
+    words = len(sentence.strip().split()) if sentence else 0
+    speech_ms = words * 360
+    # Settle hold is 35% of total line, so speech must finish within 65% of the line
+    needed_for_perform_phase = int(speech_ms / 0.65) if speech_ms > 0 else 0
+    return max(5400, needed_for_perform_phase, speech_ms + 1890)
+
 def validate_and_sanitize_screenplay(raw_json: Any, provision_text: str) -> Dict[str, Any]:
     """
     Validates and sanitizes the Gemini screenplay JSON.
@@ -316,9 +329,12 @@ def validate_and_sanitize_screenplay(raw_json: Any, provision_text: str) -> Dict
                 act_type = "contract_sign"
             line["action_type"] = act_type
             line["line_num"] = l_idx + 1
-            line["duration_ms"] = max(int(line.get("duration_ms") or 5400), 5400)
             if not line.get("sentence"):
                 line["sentence"] = f"Sentence {l_idx + 1} explaining {data['core_doctrine']}."
+            sentence_text = line["sentence"]
+            explicit_dur = int(line.get("duration_ms") or 0)
+            speech_needed = estimate_speech_duration_ms(sentence_text)
+            line["duration_ms"] = max(explicit_dur, speech_needed, 5400)
             if not line.get("line_title"):
                 line["line_title"] = f"Step {l_idx + 1}: {act_type.replace('_', ' ').title()}"
 

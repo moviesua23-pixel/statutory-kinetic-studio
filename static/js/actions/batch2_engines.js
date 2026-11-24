@@ -15,6 +15,8 @@
      * Semicircular precision instrument gauge / metric dial with statutory threshold.
      * Tabular count-up with Indian number grouping (en-IN), needle rotation,
      * threshold marker, and settled compliance verdict badge.
+     * Missing data handling: draws empty track, no invented arc or %, label only.
+     * Loss vs gain distinguishable by color (crimson vs emerald) and icon.
      */
     financial_meter(ctx, payload = {}, bounds, phaseState, themeColors, sceneGraph, lineIdx = 0) {
       const p = phaseState.progress;
@@ -23,12 +25,24 @@
       const isReduced = window.THEME.prefersReducedMotion();
 
       const title = payload.title || "Financial Quantum / Statutory Metric";
-      const minVal = Number(payload.min_val ?? 0);
-      const maxVal = Number(payload.max_val ?? 10000000);
-      const targetVal = Number(payload.current_val ?? 7500000);
-      const thresholdVal = Number(payload.threshold ?? 5000000);
+      const rawVal = payload.numeric_value ?? payload.current_val;
+      const hasData = rawVal !== undefined && rawVal !== null && !isNaN(Number(rawVal));
+      const targetVal = hasData ? Number(rawVal) : 0;
+
+      const rawMax = payload.max_value ?? payload.max_val;
+      const hasMax = rawMax !== undefined && rawMax !== null && !isNaN(Number(rawMax));
+      const maxVal = hasMax ? Number(rawMax) : (hasData ? (targetVal > 0 ? targetVal * 1.5 : 10000000) : 10000000);
+
+      const rawMin = payload.min_value ?? payload.min_val;
+      const hasMin = rawMin !== undefined && rawMin !== null && !isNaN(Number(rawMin));
+      const minVal = hasMin ? Number(rawMin) : 0;
+
+      const rawThreshold = payload.threshold;
+      const hasThreshold = rawThreshold !== undefined && rawThreshold !== null && !isNaN(Number(rawThreshold));
+      const thresholdVal = hasThreshold ? Number(rawThreshold) : null;
+
+      const direction = (payload.direction || "").toLowerCase(); // "gain", "loss", "threshold", or ""
       const unit = payload.unit || "₹";
-      const statusText = payload.status || (targetVal >= thresholdVal ? "STATUTORY THRESHOLD EXCEEDED" : "WITHIN STATUTORY LIMIT");
 
       const cardW = Math.min(620, bounds.w * 0.85);
       const cardH = Math.min(350, bounds.h * 0.90);
@@ -44,13 +58,13 @@
       const endAngle = Math.PI * 2.20;   // 396 deg (total span: 252 deg)
       const totalSpan = endAngle - startAngle;
 
-      const normTarget = Math.max(0, Math.min(1, (targetVal - minVal) / (maxVal - minVal || 1)));
-      const normThreshold = Math.max(0, Math.min(1, (thresholdVal - minVal) / (maxVal - minVal || 1)));
+      const normTarget = hasData ? Math.max(0, Math.min(1, (targetVal - minVal) / (maxVal - minVal || 1))) : 0;
+      const normThreshold = hasThreshold ? Math.max(0, Math.min(1, (thresholdVal - minVal) / (maxVal - minVal || 1))) : null;
 
       // Current progress
-      const currentNorm = isSettle ? normTarget : (isReduced ? normTarget : normTarget * window.TWEEN.ease.easeOutCubic(effectiveP));
+      const currentNorm = hasData ? (isSettle ? normTarget : (isReduced ? normTarget : normTarget * window.TWEEN.ease.easeOutCubic(effectiveP))) : 0;
       const currentAngle = startAngle + (currentNorm * totalSpan);
-      const thresholdAngle = startAngle + (normThreshold * totalSpan);
+      const thresholdAngle = hasThreshold ? startAngle + (normThreshold * totalSpan) : null;
 
       // Keyed actor persistence
       if (sceneGraph) {
@@ -82,61 +96,113 @@
       ctx.arc(gaugeCenterX, gaugeCenterY, gaugeRadius, startAngle, endAngle);
       ctx.stroke();
 
-      // Active Value Arc
-      const isAboveThreshold = targetVal >= thresholdVal;
-      const arcColor = isAboveThreshold ? window.THEME.colors.accent.emerald.main : window.THEME.colors.accent.indigo.main;
-      ctx.strokeStyle = arcColor;
-      ctx.beginPath();
-      ctx.arc(gaugeCenterX, gaugeCenterY, gaugeRadius, startAngle, currentAngle);
-      ctx.stroke();
+      // Determine accent colors & icons based on direction
+      let arcColor = window.THEME.colors.accent.indigo.main;
+      let badgeTheme = window.THEME.colors.accent.indigo;
+      let badgeIcon = "shield";
+      let defaultStatus = "WITHIN STATUTORY THRESHOLD";
 
-      // 3. Threshold Marker Tick & Label
-      const thX1 = gaugeCenterX + Math.cos(thresholdAngle) * (gaugeRadius - 12);
-      const thY1 = gaugeCenterY + Math.sin(thresholdAngle) * (gaugeRadius - 12);
-      const thX2 = gaugeCenterX + Math.cos(thresholdAngle) * (gaugeRadius + 12);
-      const thY2 = gaugeCenterY + Math.sin(thresholdAngle) * (gaugeRadius + 12);
+      if (direction === "loss") {
+        arcColor = window.THEME.colors.accent.crimson.main;
+        badgeTheme = window.THEME.colors.accent.crimson;
+        badgeIcon = "alertTriangle";
+        defaultStatus = "STATUTORY LOSS / DEFICIT RECORDED";
+      } else if (direction === "gain") {
+        arcColor = window.THEME.colors.accent.emerald.main;
+        badgeTheme = window.THEME.colors.accent.emerald;
+        badgeIcon = "trendingUp";
+        defaultStatus = "STATUTORY SURPLUS / QUANTUM SATISFIED";
+      } else if (hasThreshold) {
+        const isAbove = targetVal >= thresholdVal;
+        if (isAbove) {
+          arcColor = window.THEME.colors.accent.emerald.main;
+          badgeTheme = window.THEME.colors.accent.emerald;
+          badgeIcon = "checkCircle";
+          defaultStatus = "STATUTORY THRESHOLD EXCEEDED";
+        } else {
+          arcColor = window.THEME.colors.accent.indigo.main;
+          badgeTheme = window.THEME.colors.accent.indigo;
+          badgeIcon = "shield";
+          defaultStatus = "WITHIN STATUTORY LIMIT";
+        }
+      }
 
-      ctx.strokeStyle = window.THEME.colors.accent.amber.main;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(thX1, thY1);
-      ctx.lineTo(thX2, thY2);
-      ctx.stroke();
+      const statusText = payload.status || (hasData ? defaultStatus : "PENDING STATUTORY DETERMINATION");
+
+      // Active Value Arc - Only drawn when data is present and progress > 0
+      if (hasData && currentNorm > 0) {
+        ctx.strokeStyle = arcColor;
+        ctx.beginPath();
+        ctx.arc(gaugeCenterX, gaugeCenterY, gaugeRadius, startAngle, currentAngle);
+        ctx.stroke();
+      }
+
+      // 3. Threshold Marker Tick & Label (only if threshold provided)
+      if (hasThreshold && thresholdAngle !== null) {
+        const thX1 = gaugeCenterX + Math.cos(thresholdAngle) * (gaugeRadius - 12);
+        const thY1 = gaugeCenterY + Math.sin(thresholdAngle) * (gaugeRadius - 12);
+        const thX2 = gaugeCenterX + Math.cos(thresholdAngle) * (gaugeRadius + 12);
+        const thY2 = gaugeCenterY + Math.sin(thresholdAngle) * (gaugeRadius + 12);
+
+        ctx.strokeStyle = window.THEME.colors.accent.amber.main;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(thX1, thY1);
+        ctx.lineTo(thX2, thY2);
+        ctx.stroke();
+      }
 
       // 4. Center Tabular Counter Display (en-IN Indian grouping)
-      const displayVal = Math.round(isSettle ? targetVal : (isReduced ? targetVal : targetVal * window.TWEEN.ease.easeOutCubic(effectiveP)));
-      const formattedVal = `${unit} ${displayVal.toLocaleString("en-IN")}`;
-
-      ctx.font = window.THEME.typography.hero;
-      ctx.fillStyle = themeColors.textPrimary;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(formattedVal, gaugeCenterX, gaugeCenterY - 10);
 
-      ctx.font = window.THEME.typography.caption;
-      ctx.fillStyle = themeColors.textSecondary;
-      const thFormatted = `${unit} ${thresholdVal.toLocaleString("en-IN")}`;
-      ctx.fillText(`Statutory Threshold: ${thFormatted}`, gaugeCenterX, gaugeCenterY + 28);
+      if (hasData) {
+        const displayVal = Math.round(isSettle ? targetVal : (isReduced ? targetVal : targetVal * window.TWEEN.ease.easeOutCubic(effectiveP)));
+        const formattedVal = `${unit} ${displayVal.toLocaleString("en-IN")}`;
+
+        ctx.font = window.THEME.typography.hero;
+        ctx.fillStyle = themeColors.textPrimary;
+        ctx.fillText(formattedVal, gaugeCenterX, gaugeCenterY - 10);
+
+        ctx.font = window.THEME.typography.caption;
+        ctx.fillStyle = themeColors.textSecondary;
+        if (hasThreshold) {
+          const thFormatted = `${unit} ${thresholdVal.toLocaleString("en-IN")}`;
+          ctx.fillText(`Statutory Threshold: ${thFormatted}`, gaugeCenterX, gaugeCenterY + 28);
+        } else {
+          ctx.fillText(payload.subtitle || "Statutory Quantum Assessment", gaugeCenterX, gaugeCenterY + 28);
+        }
+      } else {
+        // Missing data: draw no fill, no invented percentage, label only
+        ctx.font = window.THEME.typography.hero;
+        ctx.fillStyle = themeColors.textMuted;
+        ctx.fillText("—", gaugeCenterX, gaugeCenterY - 10);
+
+        ctx.font = window.THEME.typography.caption;
+        ctx.fillStyle = themeColors.textSecondary;
+        ctx.fillText("Quantum Data Awaiting Statutory Adjudication", gaugeCenterX, gaugeCenterY + 28);
+      }
 
       // Min / Max Labels at track bases
       ctx.font = window.THEME.typography.captionBold;
       ctx.fillStyle = themeColors.textMuted;
       const minX = gaugeCenterX + Math.cos(startAngle) * (gaugeRadius + 22);
       const minY = gaugeCenterY + Math.sin(startAngle) * (gaugeRadius + 22);
-      ctx.fillText(`${unit} ${minVal.toLocaleString("en-IN")}`, minX, minY);
+      ctx.fillText(hasMin || hasData ? `${unit} ${minVal.toLocaleString("en-IN")}` : "—", minX, minY);
 
       const maxX = gaugeCenterX + Math.cos(endAngle) * (gaugeRadius + 22);
       const maxY = gaugeCenterY + Math.sin(endAngle) * (gaugeRadius + 22);
-      ctx.fillText(`${unit} ${maxVal.toLocaleString("en-IN")}`, maxX, maxY);
+      ctx.fillText(hasMax || hasData ? `${unit} ${maxVal.toLocaleString("en-IN")}` : "—", maxX, maxY);
 
       // 5. Settled Compliance / Assessment Badge (Bottom)
       if (isSettle) {
-        const badgeColor = isAboveThreshold ? window.THEME.colors.accent.emerald : window.THEME.colors.accent.indigo;
+        const finalBadgeTheme = hasData ? badgeTheme : { light: themeColors.bgSubtle, main: themeColors.textSecondary, border: themeColors.border };
+        const finalBadgeIcon = hasData ? badgeIcon : "shield";
         window.SHARED_DRAW.pill(ctx, statusText.toUpperCase(), cardX + (cardW - 380) / 2, cardY + cardH - 46, {
-          fill: badgeColor.light,
-          textFill: badgeColor.main,
-          stroke: badgeColor.border,
-          icon: isAboveThreshold ? "checkCircle" : "shield"
+          fill: finalBadgeTheme.light,
+          textFill: finalBadgeTheme.main,
+          stroke: finalBadgeTheme.border,
+          icon: finalBadgeIcon
         });
       }
 
@@ -149,6 +215,8 @@
      * ============================================================
      * Precision limitation clock dial with rotating limitation hand,
      * statutory deadline sector sweep, countdown card, and settled time-bar badge.
+     * Hand angle and sector derived from payload (elapsed vs. limit).
+     * With missing data, dial shows label only (no invented arc or hand angle).
      */
     clock_limitation(ctx, payload = {}, bounds, phaseState, themeColors, sceneGraph, lineIdx = 0) {
       const p = phaseState.progress;
@@ -157,9 +225,20 @@
       const isReduced = window.THEME.prefersReducedMotion();
 
       const actTitle = payload.act_title || "Statutory Limitation Period";
-      const deadlineText = payload.deadline || "Within 3 Years from Cause of Action";
-      const isBarred = payload.is_barred === true;
-      const verdict = payload.verdict || (isBarred ? "TIME-BARRED: REMEDY EXTINGUISHED" : "TIMELY COMPLIANCE: CLAIM ENFORCEABLE");
+      const deadlineText = payload.deadline || "Prescribed Statutory Limitation";
+
+      const hasElapsed = payload.elapsed !== undefined && payload.elapsed !== null && !isNaN(Number(payload.elapsed));
+      const hasLimit = payload.limit !== undefined && payload.limit !== null && !isNaN(Number(payload.limit)) && Number(payload.limit) > 0;
+      const hasData = hasElapsed && hasLimit;
+
+      let ratio = 0;
+      let isBarred = payload.is_barred === true;
+      if (hasData) {
+        ratio = Math.max(0, Number(payload.elapsed) / Number(payload.limit));
+        if (ratio >= 1.0) isBarred = true;
+      }
+
+      const verdict = payload.verdict || (isBarred ? "TIME-BARRED: REMEDY EXTINGUISHED" : "TIMELY INSTITUTION: ENFORCEABLE");
 
       const clockR = Math.min(100, bounds.h * 0.28);
       const clockX = bounds.x + bounds.w * 0.28;
@@ -167,7 +246,7 @@
 
       // Rotation angles: Hand rotates from -90 deg (12 o'clock) clockwise
       const startHandAngle = -Math.PI / 2;
-      const maxSweep = isBarred ? (Math.PI * 1.85) : (Math.PI * 1.25);
+      const maxSweep = Math.min(Math.PI * 2, ratio * Math.PI * 2);
       const handT = isSettle ? 1.0 : (isReduced ? 1.0 : window.TWEEN.ease.easeInOutQuart(effectiveP));
       const currentHandAngle = startHandAngle + (handT * maxSweep);
 
@@ -188,13 +267,15 @@
       ctx.fill();
       ctx.stroke();
 
-      // Swept Limitation Sector Arc
-      ctx.fillStyle = isBarred ? "rgba(220, 38, 38, 0.12)" : "rgba(16, 185, 129, 0.12)";
-      ctx.beginPath();
-      ctx.moveTo(clockX, clockY);
-      ctx.arc(clockX, clockY, clockR - 4, startHandAngle, currentHandAngle, false);
-      ctx.closePath();
-      ctx.fill();
+      // Swept Limitation Sector Arc - ONLY drawn when hasData is true and maxSweep > 0
+      if (hasData && maxSweep > 0) {
+        ctx.fillStyle = isBarred ? "rgba(220, 38, 38, 0.12)" : "rgba(16, 185, 129, 0.12)";
+        ctx.beginPath();
+        ctx.moveTo(clockX, clockY);
+        ctx.arc(clockX, clockY, clockR - 4, startHandAngle, currentHandAngle, false);
+        ctx.closePath();
+        ctx.fill();
+      }
 
       // 12 Clock Hour Pips
       for (let i = 0; i < 12; i++) {
@@ -214,20 +295,22 @@
         ctx.stroke();
       }
 
-      // Rotating Limitation Hand
-      ctx.strokeStyle = isBarred ? window.THEME.colors.accent.crimson.main : window.THEME.colors.accent.indigo.main;
-      ctx.lineWidth = 2.5;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(clockX, clockY);
-      ctx.lineTo(
-        clockX + Math.cos(currentHandAngle) * (clockR - 22),
-        clockY + Math.sin(currentHandAngle) * (clockR - 22)
-      );
-      ctx.stroke();
+      // Rotating Limitation Hand - ONLY drawn when hasData is true
+      if (hasData) {
+        ctx.strokeStyle = isBarred ? window.THEME.colors.accent.crimson.main : window.THEME.colors.accent.indigo.main;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(clockX, clockY);
+        ctx.lineTo(
+          clockX + Math.cos(currentHandAngle) * (clockR - 22),
+          clockY + Math.sin(currentHandAngle) * (clockR - 22)
+        );
+        ctx.stroke();
+      }
 
       // Center Pin
-      ctx.fillStyle = isBarred ? window.THEME.colors.accent.crimson.main : window.THEME.colors.accent.indigo.main;
+      ctx.fillStyle = hasData ? (isBarred ? window.THEME.colors.accent.crimson.main : window.THEME.colors.accent.indigo.main) : themeColors.textMuted;
       ctx.beginPath();
       ctx.arc(clockX, clockY, 5, 0, Math.PI * 2);
       ctx.fill();
@@ -266,7 +349,8 @@
 
       ctx.font = window.THEME.typography.body;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText(payload.detail || "Statutory period within which claim or appeal must be instituted.", cardX + 24, cardY + 112);
+      const detailText = payload.detail || (hasData ? `Elapsed: ${payload.elapsed} of ${payload.limit} ${payload.unit || "Periods"}` : "Prescribed period within which action or appeal must be instituted.");
+      ctx.fillText(detailText, cardX + 24, cardY + 112);
 
       // 3. Settled Verdict Badge
       if (isSettle) {
@@ -287,7 +371,8 @@
      * 3. PROPERTY TRANSFER ENGINE
      * ============================================================
      * Real estate architecture boundary, Transferor/Transferee bilateral stations,
-     * golden title key conveying across trajectory, settled mutation deed badge.
+     * golden title key conveying across trajectory, settled conveyance instrument badge.
+     * Universal statutory neutrality: No jurisdiction-specific wording ("VESTED & MUTATED").
      */
     property_transfer(ctx, payload = {}, bounds, phaseState, themeColors, sceneGraph, lineIdx = 0) {
       const p = phaseState.progress;
@@ -295,11 +380,11 @@
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
       const isReduced = window.THEME.prefersReducedMotion();
 
-      const transferor = payload.transferor || "Transferor (Vendor)";
-      const transferee = payload.transferee || "Transferee (Purchaser)";
-      const propertyDesc = payload.property_desc || "Commercial Immovable Property";
-      const deedText = payload.deed_title || "Registered Conveyance Deed";
-      const statusText = payload.status || "TITLE VESTED & MUTATED";
+      const transferor = payload.transferor || "Transferor Entity";
+      const transferee = payload.transferee || "Transferee Entity";
+      const propertyDesc = payload.property_desc || "Commercial Immovable Asset";
+      const deedText = payload.deed_title || payload.instrument || "Registered Instrument";
+      const statusText = payload.status || "TITLE CONVEYED";
 
       const stationW = Math.min(220, bounds.w * 0.26);
       const stationH = 120;
@@ -387,7 +472,7 @@
 
       ctx.font = window.THEME.typography.caption;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText("Relinquishing Possession", leftX + 24, stationY + 74);
+      ctx.fillText(payload.transferor_role || "Relinquishing Title", leftX + 24, stationY + 74);
 
       // 3. Transferee Card (Right)
       window.SHARED_DRAW.card(ctx, rightX, stationY, stationW, stationH, {
@@ -409,7 +494,7 @@
 
       ctx.font = window.THEME.typography.caption;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText("Vesting Legal Estate", rightX + 24, stationY + 74);
+      ctx.fillText(payload.transferee_role || "Vesting Legal Estate", rightX + 24, stationY + 74);
 
       // 4. Trajectory Arc & Key Transfer
       const proj = window.SHARED_DRAW.trajectoryArc(ctx, startX, startY, endX, endY, -60, keyT, window.THEME.colors.accent.amber.main);
@@ -441,9 +526,9 @@
         ctx.restore();
       }
 
-      // 5. Settled Title Mutation Badge (Bottom)
+      // 5. Settled Title Conveyance Badge (Bottom)
       if (isSettle) {
-        window.SHARED_DRAW.pill(ctx, `${statusText}: ${deedText}`, bounds.x + (bounds.w - 460) / 2, bounds.y + bounds.h - 48, {
+        window.SHARED_DRAW.pill(ctx, `${statusText.toUpperCase()}: ${deedText.toUpperCase()}`, bounds.x + (bounds.w - 460) / 2, bounds.y + bounds.h - 48, {
           fill: window.THEME.colors.accent.emerald.light,
           textFill: window.THEME.colors.accent.emerald.main,
           stroke: window.THEME.colors.accent.emerald.border,
@@ -461,6 +546,7 @@
      * Multi-step statutory criteria compliance board.
      * Checkmarks spring into place sequentially across PERFORM phase,
      * concluding in settled emerald all-satisfied banner.
+     * Derived dynamically: "ALL N CONDITIONS" derived from actual criteria count.
      */
     condition_checklist(ctx, payload = {}, bounds, phaseState, themeColors, sceneGraph, lineIdx = 0) {
       const p = phaseState.progress;
@@ -469,13 +555,20 @@
       const isReduced = window.THEME.prefersReducedMotion();
 
       const title = payload.title || "Statutory Essential Conditions";
-      const conditions = payload.conditions || [
-        { text: "Prescribed Statutory Document in Possession", satisfied: true },
-        { text: "Physical Receipt of Goods or Services Certified", satisfied: true },
-        { text: "Statutory Tax Discharged to Appropriate Government", satisfied: true },
-        { text: "Valid Prescribed Return Furnished under Law", satisfied: true }
-      ];
-      const verdict = payload.verdict || "ALL STATUTORY CONDITIONS FULFILLED";
+      let conditions = payload.conditions;
+      if (!conditions && Array.isArray(payload.criteria)) {
+        conditions = payload.criteria.map(c => typeof c === "string" ? { text: c, satisfied: true } : c);
+      }
+      if (!conditions || !Array.isArray(conditions) || conditions.length === 0) {
+        conditions = [
+          { text: "Prescribed Statutory Document in Possession", satisfied: true },
+          { text: "Physical Receipt of Goods or Services Certified", satisfied: true },
+          { text: "Statutory Tax Discharged to Appropriate Government", satisfied: true },
+          { text: "Valid Prescribed Return Furnished under Law", satisfied: true }
+        ];
+      }
+      const n = conditions.length;
+      const verdict = payload.verdict || (`ALL ${n} STATUTORY CONDITIONS SATISFIED`);
 
       const boardW = Math.min(640, bounds.w * 0.85);
       const boardH = Math.min(360, bounds.h * 0.90);
@@ -513,7 +606,6 @@
       ctx.fillText(title.toUpperCase(), boardX + 44, boardY + 23);
 
       // 2. Sequential Checklist Rows
-      const n = conditions.length;
       const availableH = boardH - 110;
       const rowH = Math.floor(availableH / n);
       const startRowY = boardY + 54;

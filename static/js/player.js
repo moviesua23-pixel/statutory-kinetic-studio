@@ -180,11 +180,13 @@
     }
 
     getEffectiveLineDuration(line) {
-      // Requirement 1 & 6: Fixed nominal timeline. Playback speed applies ONLY to clock delta rate.
-      // Nominal line duration is fixed at >= 5400ms so that at 1.25x speed,
-      // real-time hold is (5400 * 0.35) / 1.25 = 1512ms >= 1.5s.
+      // Requirement 1: Nominal line duration strictly accounts for speech length and explicit duration.
+      // Speech must conclude by 65% of the line, leaving a >= 1.5s real-time hold in SETTLE (35%).
       const baseDur = line?.duration_ms || DEFAULT_LINE_DURATION_MS;
-      return Math.max(baseDur, DEFAULT_LINE_DURATION_MS);
+      const sentence = line?.sentence || "";
+      const words = sentence.trim() ? sentence.trim().split(/\s+/).length : 0;
+      const speechNeeded = words > 0 ? Math.ceil((words * 360) / 0.65) : DEFAULT_LINE_DURATION_MS;
+      return Math.max(baseDur, DEFAULT_LINE_DURATION_MS, speechNeeded);
     }
 
     getSlideDurationMs(slide) {

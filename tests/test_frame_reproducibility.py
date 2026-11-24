@@ -112,7 +112,61 @@ SAMPLE_PRESENTATION = {
         },
         {
             "id": 5,
-            "tab_title": "5. Financial Meter",
+            "tab_title": "5. Contract Sign",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "contract_sign",
+                    "action_payload": {
+                        "title": "Registered Conveyance Deed",
+                        "parties": "First Party & Second Party",
+                        "key_term": "Transfer of Legal Title and Possession",
+                        "stamp_text": "SIGNED & REGISTERED"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "tab_title": "6. Handshake Consent",
+            "layout_archetype": "layout_bilateral_split",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "handshake_consent",
+                    "action_payload": {
+                        "party_a": "Promisor Entity",
+                        "party_b": "Promisee Entity",
+                        "consent_rule": "Mutual Consent and Consideration",
+                        "status": "Binding Accord Reached"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "tab_title": "7. Goods Transport",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "goods_transport",
+                    "action_payload": {
+                        "origin": "Manufacturing Unit",
+                        "destination": "Delivery Terminal",
+                        "cargo": "Capital Machinery Consignment",
+                        "delivery_status": "CONSIGNMENT DELIVERED"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "tab_title": "8. Financial Meter",
             "layout_archetype": "layout_hero_stage",
             "lines": [
                 {
@@ -129,8 +183,8 @@ SAMPLE_PRESENTATION = {
             ]
         },
         {
-            "id": 6,
-            "tab_title": "6. Clock Limitation",
+            "id": 9,
+            "tab_title": "9. Clock Limitation",
             "layout_archetype": "layout_hero_stage",
             "lines": [
                 {
@@ -139,14 +193,16 @@ SAMPLE_PRESENTATION = {
                     "action_type": "clock_limitation",
                     "action_payload": {
                         "deadline": "3 Years",
+                        "elapsed": 2,
+                        "limit": 3,
                         "is_barred": False
                     }
                 }
             ]
         },
         {
-            "id": 7,
-            "tab_title": "7. Property Transfer",
+            "id": 10,
+            "tab_title": "10. Property Transfer",
             "layout_archetype": "layout_hero_stage",
             "lines": [
                 {
@@ -155,14 +211,14 @@ SAMPLE_PRESENTATION = {
                     "action_type": "property_transfer",
                     "action_payload": {
                         "property_desc": "Commercial Asset",
-                        "status": "MUTATED"
+                        "status": "TITLE CONVEYED"
                     }
                 }
             ]
         },
         {
-            "id": 8,
-            "tab_title": "8. Condition Checklist",
+            "id": 11,
+            "tab_title": "11. Condition Checklist",
             "layout_archetype": "layout_hero_stage",
             "lines": [
                 {
@@ -174,6 +230,108 @@ SAMPLE_PRESENTATION = {
                             {"text": "Condition 1", "satisfied": True},
                             {"text": "Condition 2", "satisfied": True}
                         ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": 12,
+            "tab_title": "12. Lock Security",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "lock_security",
+                    "action_payload": {
+                        "security_type": "Performance Bank Guarantee",
+                        "amount": "₹25,00,000",
+                        "obligor": "Contractor Entity",
+                        "beneficiary": "Statutory Board",
+                        "status": "STATUTORILY SECURED & ENFORCEABLE"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 13,
+            "tab_title": "13. Corporate Board",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "corporate_board",
+                    "action_payload": {
+                        "company_name": "Apex Corporation Ltd",
+                        "resolution_title": "Special Resolution under Section 188",
+                        "votes_for": 85,
+                        "votes_against": 15,
+                        "required_threshold": 75,
+                        "status": "SPECIAL RESOLUTION DULY PASSED"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 14,
+            "tab_title": "14. Notice Dispatch",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "notice_dispatch",
+                    "action_payload": {
+                        "notice_title": "Statutory Show Cause Notice",
+                        "sender": "Tax Authority",
+                        "recipient": "Taxpayer Entity",
+                        "dispatch_mode": "Speed Post with AD",
+                        "status": "NOTICE DULY SERVED & ACKNOWLEDGED"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 15,
+            "tab_title": "15. Penalty Fine",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "penalty_fine",
+                    "action_payload": {
+                        "penalty_title": "Statutory Penalty Order",
+                        "base_demand": "₹50,00,000",
+                        "penalty_amount": "₹50,00,000",
+                        "interest_amount": "₹9,00,000",
+                        "total_amount": "₹1,09,00,000",
+                        "status": "STATUTORY DEMAND ORDER CONFIRMED"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 16,
+            "tab_title": "16. Waterfall Flow",
+            "layout_archetype": "layout_hero_stage",
+            "lines": [
+                {
+                    "line_num": 1,
+                    "duration_ms": 5400,
+                    "action_type": "waterfall_flow",
+                    "action_payload": {
+                        "waterfall_title": "IBC Section 53 Waterfall",
+                        "realized_corpus": "₹5,00,00,000",
+                        "tiers": [
+                            {"label": "1. CIRP & Liquidation Costs", "amount": "₹50,00,000", "settled": True},
+                            {"label": "2. Secured Creditors Dues", "amount": "₹2,50,00,000", "settled": True},
+                            {"label": "3. Unpaid Employee Wages", "amount": "₹1,00,00,000", "settled": True},
+                            {"label": "4. Financial Debts Unsecured", "amount": "₹1,00,00,000", "settled": True},
+                            {"label": "5. Government Dues Exhausted", "amount": "₹0", "settled": False}
+                        ],
+                        "status": "ORDER OF PRIORITY SATISFIED"
                     }
                 }
             ]
@@ -204,61 +362,67 @@ class TestFrameReproducibility(unittest.TestCase):
         cls.playwright.stop()
 
     def test_scrub_order_independence_aba(self):
-        """Requirement 1: Renders frame A, then B, then A again and asserts A is pixel-identical both times."""
-        # Frame A: slide 0 at 1200ms
-        img_A1 = self.page.evaluate("""() => {
-            window.PRESENTATION_PLAYER.renderFrame(0, 1200);
-            return document.getElementById('stage_canvas').toDataURL('image/png');
-        }""")
-
-        # Frame B: slide 0 at 3600ms
-        self.page.evaluate("""() => {
-            window.PRESENTATION_PLAYER.renderFrame(0, 3600);
-        }""")
-
-        # Frame A again: slide 0 at 1200ms
-        img_A2 = self.page.evaluate("""() => {
-            window.PRESENTATION_PLAYER.renderFrame(0, 1200);
-            return document.getElementById('stage_canvas').toDataURL('image/png');
-        }""")
-
-        self.assertEqual(img_A1, img_A2, "Scrubbing backwards to Frame A must yield 100% pixel-identical buffer")
-
-    def test_settle_hold_65_and_100_pixel_identical(self):
-        """Requirement 2: The 65% and 100% frames are pixel-identical inside mainStageRegion (excluding progress dots)."""
-        # Test pilot, batch 1, and batch 2 engines (all 8 slides)
-        for slide_idx in range(len(SAMPLE_PRESENTATION["scenes"])):
-            # 65% of 5400ms is 3510ms, 100% is 5400ms
-            img_stage_65 = self.page.evaluate(f"""() => {{
-                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 3510);
-                const canvas = document.getElementById('stage_canvas');
-                const ctx = canvas.getContext('2d');
-                const sub = document.createElement('canvas');
-                sub.width = 1184; sub.height = 480;
-                const sctx = sub.getContext('2d');
-                const sx = canvas.width / 1280;
-                const sy = canvas.height / 720;
-                sctx.drawImage(canvas, 48 * sx, 96 * sy, 1184 * sx, 480 * sy, 0, 0, 1184, 480);
-                return sub.toDataURL('image/png');
+        """Requirement 1 & 5: Renders frame A, then B, then A again across ALL 16 built engines, asserting A is pixel-identical both times."""
+        total_slides = len(SAMPLE_PRESENTATION["scenes"])
+        self.assertEqual(total_slides, 16, "Must test all 16 built engines for scrub-order independence")
+        for slide_idx in range(total_slides):
+            # Frame A: slide at 1200ms
+            img_A1 = self.page.evaluate(f"""() => {{
+                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 1200);
+                return document.getElementById('stage_canvas').toDataURL('image/png');
             }}""")
 
-            img_stage_100 = self.page.evaluate(f"""() => {{
-                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 5400);
+            # Frame B: slide at 3600ms
+            self.page.evaluate(f"""() => {{
+                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 3600);
+            }}""")
+
+            # Frame A again: slide at 1200ms
+            img_A2 = self.page.evaluate(f"""() => {{
+                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 1200);
+                return document.getElementById('stage_canvas').toDataURL('image/png');
+            }}""")
+
+            self.assertEqual(img_A1, img_A2, f"Slide {slide_idx} ({SAMPLE_PRESENTATION['scenes'][slide_idx]['lines'][0]['action_type']}): Scrubbing backwards to Frame A must yield 100% pixel-identical buffer")
+
+    def test_settle_hold_65_and_100_pixel_identical(self):
+        """Requirement 2 & 5: The 65% and 100% frames are pixel-identical inside mainStageRegion across ALL 16 built engines."""
+        total_slides = len(SAMPLE_PRESENTATION["scenes"])
+        self.assertEqual(total_slides, 16, "Must test all 16 built engines for settle hold identity")
+        for slide_idx in range(total_slides):
+            img_stage_65, img_stage_100 = self.page.evaluate(f"""() => {{
+                const player = window.PRESENTATION_PLAYER;
+                const slide = player.data.scenes[{slide_idx}];
+                const dur = player.getSlideDurationMs(slide);
+                const t65 = dur * 0.65;
+                const t100 = dur;
+
+                // Render at 65%
+                player.renderFrame({slide_idx}, t65);
                 const canvas = document.getElementById('stage_canvas');
-                const ctx = canvas.getContext('2d');
-                const sub = document.createElement('canvas');
-                sub.width = 1184; sub.height = 480;
-                const sctx = sub.getContext('2d');
+                const sub65 = document.createElement('canvas');
+                sub65.width = 1184; sub65.height = 480;
+                const sctx65 = sub65.getContext('2d');
                 const sx = canvas.width / 1280;
                 const sy = canvas.height / 720;
-                sctx.drawImage(canvas, 48 * sx, 96 * sy, 1184 * sx, 480 * sy, 0, 0, 1184, 480);
-                return sub.toDataURL('image/png');
+                sctx65.drawImage(canvas, 48 * sx, 96 * sy, 1184 * sx, 480 * sy, 0, 0, 1184, 480);
+                const data65 = sub65.toDataURL('image/png');
+
+                // Render at 100%
+                player.renderFrame({slide_idx}, t100);
+                const sub100 = document.createElement('canvas');
+                sub100.width = 1184; sub100.height = 480;
+                const sctx100 = sub100.getContext('2d');
+                sctx100.drawImage(canvas, 48 * sx, 96 * sy, 1184 * sx, 480 * sy, 0, 0, 1184, 480);
+                const data100 = sub100.toDataURL('image/png');
+
+                return [data65, data100];
             }}""")
 
             self.assertEqual(
                 img_stage_65,
                 img_stage_100,
-                f"Slide {slide_idx}: mainStageRegion at 65% (3510ms) and 100% (5400ms) must be 100% pixel-identical"
+                f"Slide {slide_idx} ({SAMPLE_PRESENTATION['scenes'][slide_idx]['lines'][0]['action_type']}): mainStageRegion at 65% and 100% must be 100% pixel-identical"
             )
 
     def test_speed_change_continuity(self):
