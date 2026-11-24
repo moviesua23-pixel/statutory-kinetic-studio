@@ -1,6 +1,7 @@
 // -*- coding: utf-8 -*-
 // static/js/presentation_player.js
-// 100% Dynamic, Provision-Agnostic Kinetic Animation Player for Any Statute
+// 100% Dynamic Line-by-Line Kinetic Animation Player
+// Every single line (sentence) has its own dedicated visual shape & text card!
 
 (function() {
   window.PRESENTATION_PLAYER = {};
@@ -45,7 +46,7 @@
       const isPhase1 = sc.screenplay_phase && sc.screenplay_phase.includes("PHASE 1");
       btn.className = `scene-tab-btn ${idx === currentSceneIdx ? "active" : ""} ${isPhase1 ? "phase-story" : "phase-statute"}`;
       const prefix = isPhase1 ? "📖" : "⚖️";
-      btn.innerHTML = `${prefix} Scene ${idx + 1}: ${sc.tab_title || `Scene ${idx+1}`}`;
+      btn.innerHTML = `${prefix} Slide ${idx + 1}: ${sc.tab_title || `Scene ${idx+1}`}`;
       btn.onclick = () => switchScene(idx);
       tabsContainer.appendChild(btn);
     });
@@ -71,7 +72,7 @@
     }
 
     const tagLabel = document.getElementById("anim_tag_label");
-    if (tagLabel) tagLabel.textContent = (sc.tag || `SCENE ${idx+1}`).toUpperCase();
+    if (tagLabel) tagLabel.textContent = (sc.tag || `SLIDE ${idx+1}`).toUpperCase();
 
     const storyRef = document.getElementById("anim_story_ref");
     if (storyRef) {
@@ -88,9 +89,11 @@
       narrationEl.textContent = sc.dialogue || "";
     }
 
+    const linesCount = sc.lines ? sc.lines.length : 3;
+    const maxMs = linesCount * 2800 + 1000;
     const slider = document.getElementById("anim_timeline_slider");
     if (slider) {
-      slider.max = sc.duration_ms || 10000;
+      slider.max = maxMs;
       slider.value = 0;
     }
   }
@@ -112,23 +115,23 @@
   }
 
   // ==========================================
-  // SMART DYNAMIC ICON MATCHER (UNIVERSAL)
+  // SMART DYNAMIC ICON MATCHER (FALLBACK)
   // ==========================================
-  function getSmartIcon(text) {
-    if (!text) return "file-text";
+  function getSmartIcon(text, fallback = "file-text") {
+    if (!text) return fallback;
     const s = text.toLowerCase();
-    if (s.includes("user") || s.includes("person") || s.includes("buyer") || s.includes("seller") || s.includes("party") || s.includes("director") || s.includes("promoter") || s.includes("architect") || s.includes("doctor")) return "user";
-    if (s.includes("company") || s.includes("corporate") || s.includes("firm") || s.includes("hospital") || s.includes("factory") || s.includes("enterprise") || s.includes("business")) return "building-2";
-    if (s.includes("contract") || s.includes("agreement") || s.includes("deed") || s.includes("clause") || s.includes("terms") || s.includes("policy")) return "file-text";
-    if (s.includes("money") || s.includes("price") || s.includes("consideration") || s.includes("amount") || s.includes("payment") || s.includes("profit") || s.includes("fee") || s.includes("crore") || s.includes("lakh")) return "coins";
+    if (s.includes("user") || s.includes("person") || s.includes("buyer") || s.includes("seller") || s.includes("party") || s.includes("director") || s.includes("promoter") || s.includes("mill") || s.includes("contractor") || s.includes("architect")) return "user";
+    if (s.includes("company") || s.includes("corporate") || s.includes("firm") || s.includes("hospital") || s.includes("factory") || s.includes("enterprise") || s.includes("business") || s.includes("boutique")) return "building-2";
+    if (s.includes("contract") || s.includes("agreement") || s.includes("deed") || s.includes("clause") || s.includes("terms") || s.includes("notice")) return "file-text";
+    if (s.includes("money") || s.includes("price") || s.includes("consideration") || s.includes("amount") || s.includes("payment") || s.includes("profit") || s.includes("fee") || s.includes("rupee") || s.includes("lakh")) return "coins";
     if (s.includes("loss") || s.includes("breach") || s.includes("damage") || s.includes("remote") || s.includes("default") || s.includes("dispute") || s.includes("injury")) return "alert-triangle";
-    if (s.includes("court") || s.includes("judge") || s.includes("law") || s.includes("section") || s.includes("order") || s.includes("precedent") || s.includes("verdict") || s.includes("judgement")) return "gavel";
+    if (s.includes("court") || s.includes("judge") || s.includes("law") || s.includes("section") || s.includes("order") || s.includes("precedent") || s.includes("verdict")) return "gavel";
     if (s.includes("shield") || s.includes("safe") || s.includes("exemption") || s.includes("remedy") || s.includes("defence") || s.includes("exception")) return "shield-check";
     if (s.includes("time") || s.includes("date") || s.includes("month") || s.includes("year") || s.includes("deadline") || s.includes("delay")) return "clock";
-    if (s.includes("goods") || s.includes("delivery") || s.includes("shipment") || s.includes("transport") || s.includes("fleet")) return "truck";
+    if (s.includes("goods") || s.includes("delivery") || s.includes("shipment") || s.includes("transport") || s.includes("machinery") || s.includes("truck")) return "truck";
     if (s.includes("land") || s.includes("property") || s.includes("house") || s.includes("building") || s.includes("flat")) return "residential_house";
-    if (s.includes("check") || s.includes("valid") || s.includes("condition") || s.includes("approved")) return "badge-check";
-    return "scale";
+    if (s.includes("valid") || s.includes("condition") || s.includes("rule") || s.includes("approved")) return "badge-check";
+    return fallback;
   }
 
   // ==========================================
@@ -141,7 +144,8 @@
     if (isPlaying && activeData && activeData.scenes) {
       currentTimeMs += dt;
       const sc = activeData.scenes[currentSceneIdx];
-      const maxMs = sc?.duration_ms || 10000;
+      const linesCount = sc?.lines?.length || 3;
+      const maxMs = linesCount * 2800 + 1000;
       if (currentTimeMs >= maxMs) {
         currentTimeMs = maxMs; // Hold at end of scene
       }
@@ -178,26 +182,20 @@
     const isPhase1 = sc.screenplay_phase && sc.screenplay_phase.includes("PHASE 1");
 
     // Update time indicator
+    const linesCount = sc.lines?.length || 3;
+    const maxMs = linesCount * 2800 + 1000;
     const timeDisplay = document.getElementById("anim_time_display");
     if (timeDisplay) {
       const curSec = (currentTimeMs / 1000).toFixed(1);
-      const totalSec = ((sc.duration_ms || 10000) / 1000).toFixed(1);
+      const totalSec = (maxMs / 1000).toFixed(1);
       timeDisplay.textContent = `00:${curSec.padStart(4, "0")} / 00:${totalSec.padStart(4, "0")}`;
     }
 
     // Top Header Banner
     drawTopHeaderBanner(sc, isPhase1);
 
-    // Render Dynamic Content
-    if (isPhase1) {
-      if (currentSceneIdx === 0) {
-        drawPhase1Scene1(sc);
-      } else {
-        drawPhase1Scene2(sc);
-      }
-    } else {
-      drawPhase2StatutoryBreakdown(sc);
-    }
+    // Render Line-by-Line Animation
+    drawLineByLineScene(sc, isPhase1);
   }
 
   function drawTopHeaderBanner(sc, isPhase1) {
@@ -211,315 +209,215 @@
     ctx.strokeStyle = isPhase1 ? "#FDE68A" : "#A7F3D0";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(50, 20, 320, 32, 6);
+    ctx.roundRect(50, 18, 330, 32, 6);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = isPhase1 ? "#B45309" : "#047857";
     ctx.font = `bold ${Math.round(11 * fontScale)}px JetBrains Mono, monospace`;
-    ctx.fillText(`🏛️ ${actBadgeText} · ${secBadgeText}`, 62, 41);
+    ctx.fillText(`🏛️ ${actBadgeText} · ${secBadgeText}`, 62, 39);
 
-    // Scene Title
+    // Slide Title
     ctx.fillStyle = "#0F172A";
     ctx.font = `800 ${Math.round(16 * fontScale)}px Plus Jakarta Sans, sans-serif`;
     ctx.textAlign = "left";
-    ctx.fillText(sc.tab_title || sc.tag || "Scene Analysis", 390, 42);
+    ctx.fillText(sc.tab_title || sc.tag || "Scene Analysis", 400, 40);
     ctx.restore();
   }
 
-  // ==========================================
-  // PHASE 1 SCENE 1: CHARACTERS & INITIAL DEAL
-  // ==========================================
-  function drawPhase1Scene1(sc) {
-    const chars = sc.characters_or_elements || ["Party A", "Party B", "Agreement"];
-    const char1 = chars[0] || "Party A";
-    const char2 = chars[1] || "Party B";
-    const deal = chars[2] || "Agreement / Transaction";
-
-    const pts = sc.key_points || ["Initial background", "Agreed contractual terms"];
-
-    // Card 1: Left Party
-    const p1 = Math.min(1.0, Math.max(0, (currentTimeMs - 300) / 600));
-    if (p1 > 0) {
-      ctx.save();
-      ctx.globalAlpha = p1;
-      const x1 = 80; const y1 = 90; const w1 = 340; const h1 = 230;
-
-      ctx.fillStyle = "#FFFFFF";
-      ctx.strokeStyle = "#CBD5E1";
-      ctx.lineWidth = 2;
-      ctx.shadowColor = "rgba(15,23,42,0.08)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
-      ctx.beginPath(); ctx.roundRect(x1, y1, w1, h1, 12); ctx.fill(); ctx.stroke();
-      ctx.shadowColor = "transparent";
-
-      // Icon Badge
-      const icon1 = getSmartIcon(char1);
-      if (window.drawColorfulBadgeShape) {
-        window.drawColorfulBadgeShape(ctx, icon1, x1 + w1/2, y1 + 52, 28, "indigo", "circle");
-      }
-
-      ctx.fillStyle = "#0F172A";
-      ctx.font = `800 ${Math.round(15 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(char1, x1 + w1/2, y1 + 115);
-
-      ctx.fillStyle = "#475569";
-      ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      ctx.fillText(pts[0] || "Initial Contracting Party", x1 + w1/2, y1 + 145);
-
-      ctx.restore();
+  // ============================================================
+  // LINE-BY-LINE DYNAMIC SCENE RENDERER (EVERY SENTENCE IS SHOWN)
+  // ============================================================
+  function drawLineByLineScene(sc, isPhase1) {
+    let lines = sc.lines;
+    // Fallback if legacy JSON without lines
+    if (!lines || lines.length === 0) {
+      const sentences = (sc.dialogue || "").split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
+      lines = sentences.map((sent, i) => ({
+        line_num: i + 1,
+        sentence: sent + ".",
+        line_title: sc.characters_or_elements?.[i] || sc.key_points?.[i] || `Fact / Rule ${i+1}`,
+        line_detail: sc.key_points?.[i] || sent,
+        shape_icon: getSmartIcon(sent),
+        theme: i === 0 ? "indigo" : (i === 1 ? "sky" : (i === 2 ? "amber" : "emerald"))
+      }));
     }
 
-    // Card 2: Right Party
-    const p2 = Math.min(1.0, Math.max(0, (currentTimeMs - 1200) / 600));
-    if (p2 > 0) {
-      ctx.save();
-      ctx.globalAlpha = p2;
-      const x2 = 580; const y2 = 90; const w2 = 340; const h2 = 230;
+    const count = lines.length;
+    const startY = sc.story_point_ref ? 115 : 95;
+    const cardH = 225;
+    const totalW = 880;
+    const gap = 18;
+    const cardW = Math.floor((totalW - (count - 1) * gap) / count);
+    const startX = 60;
+    const stepDurationMs = 2800;
 
-      ctx.fillStyle = "#FFFFFF";
-      ctx.strokeStyle = "#CBD5E1";
-      ctx.lineWidth = 2;
-      ctx.shadowColor = "rgba(15,23,42,0.08)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
-      ctx.beginPath(); ctx.roundRect(x2, y2, w2, h2, 12); ctx.fill(); ctx.stroke();
-      ctx.shadowColor = "transparent";
-
-      const icon2 = getSmartIcon(char2);
-      if (window.drawColorfulBadgeShape) {
-        window.drawColorfulBadgeShape(ctx, icon2, x2 + w2/2, y2 + 52, 28, "sky", "circle");
-      }
-
-      ctx.fillStyle = "#0F172A";
-      ctx.font = `800 ${Math.round(15 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(char2, x2 + w2/2, y2 + 115);
-
-      ctx.fillStyle = "#475569";
-      ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      ctx.fillText(pts[1] || "Counterparty in Transaction", x2 + w2/2, y2 + 145);
-
-      ctx.restore();
-    }
-
-    // Connecting Arrow / Pipe
-    const pPipe = Math.min(1.0, Math.max(0, (currentTimeMs - 2200) / 700));
-    if (pPipe > 0) {
-      ctx.save();
-      ctx.strokeStyle = "#4F46E5";
-      ctx.lineWidth = 3;
-      ctx.setLineDash([8, 5]);
-
-      const startX = 420;
-      const targetX = 580;
-      const curX = startX + (targetX - startX) * pPipe;
-
-      ctx.beginPath();
-      ctx.moveTo(startX, 205);
-      ctx.lineTo(curX, 205);
-      ctx.stroke();
-
-      if (pPipe > 0.4) {
-        ctx.fillStyle = "#4F46E5";
-        ctx.font = `800 ${Math.round(11 * fontScale)}px JetBrains Mono, monospace`;
-        ctx.textAlign = "center";
-        ctx.fillText(deal.toUpperCase(), 500, 190);
-      }
-      ctx.restore();
-    }
-
-    // Bottom Story Note Box
-    const pNote = Math.min(1.0, Math.max(0, (currentTimeMs - 3400) / 500));
-    if (pNote > 0) {
-      drawBottomStoryNote(pNote, sc.tag || "THE FACTUAL GENESIS", sc.dialogue);
-    }
-  }
-
-  // ==========================================
-  // PHASE 1 SCENE 2: THE TURNING POINT / BREACH
-  // ==========================================
-  function drawPhase1Scene2(sc) {
-    const chars = sc.characters_or_elements || ["Obligation", "Breach Event", "Resulting Loss"];
-    const pts = sc.key_points || ["Contractual expectations", "The turning event", "Dispute arises"];
-
-    // 3 Cards: Left Obligation -> Center Breach Event -> Right Resulting Loss
-    const items = [
-      { label: chars[0] || "1. Original Terms", text: pts[0] || "Agreed conditions", theme: "sky", startMs: 300, x: 70 },
-      { label: chars[1] || "2. The Event / Breach", text: pts[1] || "Triggering dispute", theme: "crimson", startMs: 1600, x: 375 },
-      { label: chars[2] || "3. Resulting Damage", text: pts[2] || "Legal consequence", theme: "amber", startMs: 3000, x: 680 }
-    ];
-
-    items.forEach(it => {
-      const p = Math.min(1.0, Math.max(0, (currentTimeMs - it.startMs) / 600));
-      if (p > 0) {
-        ctx.save();
-        ctx.globalAlpha = p;
-        const w = 250; const h = 230; const y = 95;
-
-        ctx.fillStyle = "#FFFFFF";
-        ctx.strokeStyle = it.theme === "crimson" ? "#FECACA" : "#CBD5E1";
-        ctx.lineWidth = it.theme === "crimson" ? 2.5 : 1.5;
-        ctx.shadowColor = "rgba(15,23,42,0.08)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
-        ctx.beginPath(); ctx.roundRect(it.x, y, w, h, 12); ctx.fill(); ctx.stroke();
-        ctx.shadowColor = "transparent";
-
-        const icon = getSmartIcon(it.label);
-        if (window.drawColorfulBadgeShape) {
-          window.drawColorfulBadgeShape(ctx, icon, it.x + w/2, y + 52, 28, it.theme, "circle");
-        }
-
-        ctx.fillStyle = it.theme === "crimson" ? "#991B1B" : "#0F172A";
-        ctx.font = `800 ${Math.round(14 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-        ctx.textAlign = "center";
-        ctx.fillText(it.label, it.x + w/2, y + 115);
-
-        ctx.fillStyle = "#475569";
-        ctx.font = `600 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-        wrapCanvasText(ctx, it.text, it.x + w/2, y + 145, w - 24, 18);
-
-        ctx.restore();
-      }
-    });
-
-    const pNote = Math.min(1.0, Math.max(0, (currentTimeMs - 4200) / 500));
-    if (pNote > 0) {
-      drawBottomStoryNote(pNote, sc.tag || "TURNING POINT & STATUTORY DISPUTE", sc.dialogue);
-    }
-  }
-
-  // ==========================================
-  // PHASE 2: STATUTORY DECONSTRUCTION
-  // ==========================================
-  function drawPhase2StatutoryBreakdown(sc) {
-    // Reference Banner: Story Point Ref
+    // If Phase 2, render Reference Banner
     if (sc.story_point_ref) {
       ctx.save();
       ctx.fillStyle = "#FFFBEB";
       ctx.strokeStyle = "#FDE68A";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.roundRect(70, 75, 860, 36, 6);
+      ctx.roundRect(startX, 65, totalW, 34, 6);
       ctx.fill(); ctx.stroke();
 
       ctx.fillStyle = "#B45309";
-      ctx.font = `800 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.font = `800 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
       ctx.textAlign = "left";
-      ctx.fillText(`🎯 ${sc.story_point_ref}`, 85, 98);
+      ctx.fillText(`🎯 ${sc.story_point_ref}`, startX + 16, 87);
       ctx.restore();
     }
 
-    const pts = sc.key_points || ["Statutory condition 1", "Statutory condition 2"];
-    const count = Math.min(3, Math.max(2, pts.length));
-    const gap = 20;
-    const totalW = 860;
-    const cardW = Math.floor((totalW - (count - 1) * gap) / count);
-    const startY = 125;
-    const cardH = 210;
+    let activeLineSentence = "";
+    let activeLineNum = 1;
 
-    pts.slice(0, count).forEach((pt, idx) => {
-      const stepStartMs = 400 + idx * 1200;
+    lines.forEach((line, idx) => {
+      const stepStartMs = 300 + idx * stepDurationMs;
       const p = Math.min(1.0, Math.max(0, (currentTimeMs - stepStartMs) / 500));
       if (p <= 0) return;
 
-      const cardX = 70 + idx * (cardW + gap);
+      const isCurrentActive = (currentTimeMs >= stepStartMs && currentTimeMs < stepStartMs + stepDurationMs) || (idx === count - 1 && currentTimeMs >= stepStartMs);
+      if (isCurrentActive) {
+        activeLineSentence = line.sentence || "";
+        activeLineNum = idx + 1;
+      }
+
+      const cardX = startX + idx * (cardW + gap);
 
       ctx.save();
       ctx.globalAlpha = p;
 
+      // Card Background & Shadow
       ctx.fillStyle = "#FFFFFF";
-      ctx.strokeStyle = idx === 0 ? "#A7F3D0" : "#CBD5E1";
-      ctx.lineWidth = idx === 0 ? 2.5 : 1.5;
-      ctx.shadowColor = "rgba(15,23,42,0.06)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
-      ctx.beginPath(); ctx.roundRect(cardX, startY, cardW, cardH, 10); ctx.fill(); ctx.stroke();
-      ctx.shadowColor = "transparent";
-
-      const icon = getSmartIcon(pt);
-      const theme = idx === 0 ? "emerald" : (idx === 1 ? "indigo" : "amber");
-      if (window.drawColorfulBadgeShape) {
-        window.drawColorfulBadgeShape(ctx, icon, cardX + cardW/2, startY + 48, 26, theme, "circle");
+      const th = line.theme || (idx === 0 ? "indigo" : (idx === 1 ? "sky" : (idx === 2 ? "amber" : "emerald")));
+      
+      if (isCurrentActive) {
+        ctx.strokeStyle = th === "crimson" ? "#DC2626" : "#4F46E5";
+        ctx.lineWidth = 3;
+        ctx.shadowColor = "rgba(79, 70, 229, 0.22)";
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 6;
+      } else {
+        ctx.strokeStyle = "#CBD5E1";
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = "rgba(15, 23, 42, 0.05)";
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 3;
       }
 
-      ctx.fillStyle = "#0F172A";
+      ctx.beginPath();
+      ctx.roundRect(cardX, startY, cardW, cardH, 12);
+      ctx.fill(); ctx.stroke();
+      ctx.shadowColor = "transparent";
+
+      // Line Number Pill (Top-Left of Card)
+      ctx.fillStyle = isCurrentActive ? "#4F46E5" : "#F1F5F9";
+      ctx.beginPath();
+      ctx.roundRect(cardX + 12, startY + 12, 60, 22, 4);
+      ctx.fill();
+
+      ctx.fillStyle = isCurrentActive ? "#FFFFFF" : "#64748B";
+      ctx.font = `800 ${Math.round(10 * fontScale)}px JetBrains Mono, monospace`;
+      ctx.textAlign = "center";
+      ctx.fillText(`LINE ${idx + 1}`, cardX + 42, startY + 27);
+
+      // Distinct Vector Badge Shape for this specific Line
+      const shapeIcon = line.shape_icon || getSmartIcon(line.line_title + " " + line.line_detail);
+      const iconCenterX = cardX + cardW / 2;
+      const iconCenterY = startY + 54;
+      if (window.drawColorfulBadgeShape) {
+        window.drawColorfulBadgeShape(ctx, shapeIcon, iconCenterX, iconCenterY, 26, th, "circle");
+      }
+
+      // Line Title (Explaining what this line is about)
+      ctx.fillStyle = isCurrentActive ? "#0F172A" : "#334155";
       ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(`RULE ${idx + 1}`, cardX + cardW/2, startY + 105);
+      wrapCanvasText(ctx, line.line_title || `Line ${idx + 1}`, iconCenterX, startY + 110, cardW - 20, 18, "center", 2);
 
-      ctx.fillStyle = "#334155";
-      ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      wrapCanvasText(ctx, pt, cardX + cardW/2, startY + 135, cardW - 20, 18);
+      // Line Detail (Statutory fact or condition)
+      ctx.fillStyle = "#64748B";
+      ctx.font = `600 ${Math.round(11 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      wrapCanvasText(ctx, line.line_detail || line.sentence || "", iconCenterX, startY + 155, cardW - 22, 16, "center", 3);
 
       ctx.restore();
+
+      // Connecting kinetic animated line between card[i] and card[i+1]
+      if (idx < count - 1 && p > 0.8) {
+        ctx.save();
+        ctx.strokeStyle = "#C7D2FE";
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        const arrowStartX = cardX + cardW;
+        const arrowEndX = cardX + cardW + gap;
+        ctx.moveTo(arrowStartX, startY + cardH / 2);
+        ctx.lineTo(arrowEndX, startY + cardH / 2);
+        ctx.stroke();
+        ctx.restore();
+      }
     });
 
-    // Bottom Statutory Takeaway Bar
-    const pTakeaway = Math.min(1.0, Math.max(0, (currentTimeMs - 3800) / 500));
-    if (pTakeaway > 0) {
-      ctx.save();
-      ctx.globalAlpha = pTakeaway;
-      const y = 355;
-      ctx.fillStyle = "#ECFDF5";
-      ctx.strokeStyle = "#059669";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(70, y, 860, 80, 8);
-      ctx.fill(); ctx.stroke();
-
-      ctx.fillStyle = "#047857";
-      ctx.font = `800 ${Math.round(12.5 * fontScale)}px JetBrains Mono, monospace`;
-      ctx.textAlign = "left";
-      ctx.fillText("⚖️ STATUTORY APPLICATION & LEGAL REMEDY:", 90, y + 28);
-
-      ctx.fillStyle = "#0F172A";
-      ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      const charTags = (sc.characters_or_elements || []).join("  •  ");
-      ctx.fillText(charTags || (sc.key_points ? sc.key_points[0] : ""), 90, y + 54);
-      ctx.restore();
-    }
-  }
-
-  function drawBottomStoryNote(progress, title, dialogue) {
+    // Bottom Subtitle Box: Synchronized Current Spoken Line
+    const bottomY = startY + cardH + 16;
     ctx.save();
-    ctx.globalAlpha = progress;
-    const x = 70; const y = 345; const w = 860; const h = 95;
-
     ctx.fillStyle = "#F8FAFC";
     ctx.strokeStyle = "#E2E8F0";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 8);
+    ctx.roundRect(startX, bottomY, totalW, 85, 8);
     ctx.fill(); ctx.stroke();
 
-    ctx.fillStyle = "#0F172A";
-    ctx.font = `800 ${Math.round(13 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.fillStyle = "#4F46E5";
+    ctx.font = `800 ${Math.round(11 * fontScale)}px JetBrains Mono, monospace`;
     ctx.textAlign = "left";
-    ctx.fillText(title, x + 18, y + 28);
+    ctx.fillText(`▶ LINE ${activeLineNum} OF ${count} IN THIS SLIDE:`, startX + 18, bottomY + 26);
 
-    ctx.fillStyle = "#475569";
-    ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-    const snippet = dialogue ? dialogue.split(".")[0] + "." : "";
-    wrapCanvasText(ctx, snippet, x + 18, y + 54, w - 36, 18, "left");
-
+    ctx.fillStyle = "#0F172A";
+    ctx.font = `600 ${Math.round(12.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, activeLineSentence || sc.dialogue || "", startX + 18, bottomY + 50, totalW - 36, 18, "left", 2);
     ctx.restore();
+
+    // Update Narration Box below canvas
+    const narrationEl = document.getElementById("anim_narration_text");
+    if (narrationEl && sc.lines) {
+      let html = "";
+      sc.lines.forEach((l, i) => {
+        const isCurrent = (i + 1) === activeLineNum;
+        if (isCurrent) {
+          html += `<span class="karaoke-active" style="display:inline-block; margin-right:6px; margin-bottom:4px; padding:3px 7px;"><strong>Line ${i+1}:</strong> ${l.sentence}</span> `;
+        } else {
+          html += `<span style="color:#64748B; margin-right:6px; margin-bottom:4px; display:inline-block;">Line ${i+1}: ${l.sentence}</span> `;
+        }
+      });
+      narrationEl.innerHTML = html;
+    }
   }
 
-  function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, align = "center") {
+  function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, align = "center", maxLines = 4) {
     if (!text) return;
     const words = text.split(" ");
     let line = "";
     let curY = y;
     ctx.textAlign = align;
 
+    let lineCount = 0;
     for (let n = 0; n < words.length; n++) {
       const testLine = line + words[n] + " ";
       const metrics = ctx.measureText(testLine);
       if (metrics.width > maxWidth && n > 0) {
-        ctx.fillText(line, x, curY);
+        ctx.fillText(line.trim(), x, curY);
         line = words[n] + " ";
         curY += lineHeight;
-        if (curY > y + lineHeight * 3) break; // cap to 4 lines
+        lineCount++;
+        if (lineCount >= maxLines) break;
       } else {
         line = testLine;
       }
     }
-    ctx.fillText(line, x, curY);
+    if (lineCount < maxLines) {
+      ctx.fillText(line.trim(), x, curY);
+    }
   }
 
   function drawPlaceholder() {

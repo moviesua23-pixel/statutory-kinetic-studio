@@ -1,6 +1,6 @@
 // -*- coding: utf-8 -*-
 // static/js/studio.js
-// Universal 2-Phase Pedagogical Story Generator & Kinetic Animation Preview Controller
+// Universal Line-by-Line 2-Phase Pedagogical Story Generator & Kinetic Animation Preview Controller
 
 let LATEST_STORY_DATA = null;
 
@@ -75,7 +75,7 @@ function renderStoryReview(data) {
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       box-shadow: 0 1px 4px rgba(15,23,42,0.06);
     `;
 
@@ -88,11 +88,11 @@ function renderStoryReview(data) {
           ${isPhase1 ? '📖 PHASE 1: STORY EXPOSITION' : '⚖️ PHASE 2: STATUTORY BREAKDOWN'}
         </span>
         <span style="font-size:14px; font-weight:800; color:#0F172A;">
-          Scene ${idx + 1}: ${sc.tab_title || sc.tag || `Scene ${idx+1}`}
+          Slide ${idx + 1}: ${sc.tab_title || sc.tag || `Slide ${idx+1}`}
         </span>
       </div>
       <span style="font-size:11px; font-weight:700; color:#64748B; background:#F1F5F9; padding:2px 8px; border-radius:4px;">
-        ${sc.tag || ''}
+        ${sc.lines ? `${sc.lines.length} Lines / Beats` : ''}
       </span>
     `;
     card.appendChild(headerRow);
@@ -105,42 +105,62 @@ function renderStoryReview(data) {
       card.appendChild(refBox);
     }
 
+    // Line-by-Line Visual Animation Beats (Every single line has its own distinct shape & text)
+    if (sc.lines && sc.lines.length > 0) {
+      const linesBox = document.createElement("div");
+      linesBox.style.cssText = "display: flex; flex-direction: column; gap: 8px;";
+      
+      const label = document.createElement("div");
+      label.style.cssText = "font-size: 11.5px; font-weight: 800; color: #4F46E5; text-transform: uppercase; letter-spacing: 0.4px;";
+      label.textContent = "✨ Line-by-Line Visual Beats (Sentence → Distinct Shape & Text):";
+      linesBox.appendChild(label);
+
+      sc.lines.forEach((l, lIdx) => {
+        const lineRow = document.createElement("div");
+        const thColor = l.theme === 'crimson' ? '#DC2626' : (l.theme === 'emerald' ? '#059669' : (l.theme === 'amber' ? '#D97706' : '#4F46E5'));
+        lineRow.style.cssText = `
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          border-left: 3.5px solid ${thColor};
+          border-radius: 6px;
+          padding: 8px 12px;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+        `;
+        lineRow.innerHTML = `
+          <span style="background:#EEF2FF; color:#4F46E5; font-family:JetBrains Mono, monospace; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; white-space:nowrap;">
+            LINE ${lIdx + 1}
+          </span>
+          <div style="flex:1;">
+            <div style="font-size:12.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:6px;">
+              <span>🏷️ <strong>${l.line_title || `Line ${lIdx+1}`}</strong></span>
+              <span style="font-size:10.5px; font-weight:700; color:#64748B; background:#FFF; border:1px solid #CBD5E1; padding:1px 6px; border-radius:4px;">Shape: ${l.shape_icon || 'badge'}</span>
+            </div>
+            <div style="font-size:12px; font-weight:600; color:#475569; margin-top:2px;">
+              ${l.line_detail || ''}
+            </div>
+            <div style="font-size:11.5px; font-weight:600; color:#64748B; font-style:italic; margin-top:3px;">
+              "${l.sentence}"
+            </div>
+          </div>
+        `;
+        linesBox.appendChild(lineRow);
+      });
+      card.appendChild(linesBox);
+    }
+
     // Teacher Narration Dialogue
     if (sc.dialogue) {
       const diaBox = document.createElement("div");
-      diaBox.style.cssText = "background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px 14px; font-size:13.5px; line-height:1.6; color:#0F172A; font-weight:600;";
+      diaBox.style.cssText = "background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:10px 14px; font-size:12.5px; line-height:1.5; color:#334155; font-weight:600;";
       diaBox.innerHTML = `
-        <div style="font-size:11px; font-weight:800; color:#4F46E5; text-transform:uppercase; margin-bottom:4px;">
-          🎙️ Teacher Script (Malayalam Explanation + English Legal Terms):
+        <div style="font-size:11px; font-weight:800; color:#64748B; text-transform:uppercase; margin-bottom:2px;">
+          🎙️ Full Teacher Narrative:
         </div>
         ${sc.dialogue}
       `;
       card.appendChild(diaBox);
-    }
-
-    // Key Takeaway Points
-    if (sc.key_points && sc.key_points.length > 0) {
-      const ptsList = document.createElement("ul");
-      ptsList.style.cssText = "margin-left: 20px; font-size: 12.5px; color: #334155; font-weight: 600; line-height: 1.5;";
-      sc.key_points.forEach(pt => {
-        const li = document.createElement("li");
-        li.textContent = pt;
-        ptsList.appendChild(li);
-      });
-      card.appendChild(ptsList);
-    }
-
-    // Characters / Elements Chips
-    if (sc.characters_or_elements && sc.characters_or_elements.length > 0) {
-      const chipRow = document.createElement("div");
-      chipRow.style.cssText = "display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;";
-      sc.characters_or_elements.forEach(c => {
-        const chip = document.createElement("span");
-        chip.style.cssText = "font-size:11px; font-weight:700; color:#475569; background:#F1F5F9; border:1px solid #E2E8F0; padding:2px 8px; border-radius:4px;";
-        chip.textContent = `🏷️ ${c}`;
-        chipRow.appendChild(chip);
-      });
-      card.appendChild(chipRow);
     }
 
     container.appendChild(card);
