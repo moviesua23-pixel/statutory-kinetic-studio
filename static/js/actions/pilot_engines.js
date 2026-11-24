@@ -56,7 +56,15 @@
       ctx.fillStyle = themeColors.textPrimary;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(fromActor, leftX + 54, cardY + 36);
+      const maxPartyW = cardW - 70;
+      let displayFrom = fromActor;
+      if (ctx.measureText(displayFrom).width > maxPartyW) {
+        while (displayFrom.length > 3 && ctx.measureText(displayFrom + "…").width > maxPartyW) {
+          displayFrom = displayFrom.slice(0, -1);
+        }
+        displayFrom += "…";
+      }
+      ctx.fillText(displayFrom, leftX + 54, cardY + 36);
 
       ctx.font = window.THEME.typography.caption;
       ctx.fillStyle = themeColors.textSecondary;
@@ -71,7 +79,14 @@
       ctx.font = window.THEME.typography.titleBold;
       ctx.fillStyle = themeColors.textPrimary;
       ctx.textAlign = "left";
-      ctx.fillText(toActor, rightX + 54, cardY + 36);
+      let displayTo = toActor;
+      if (ctx.measureText(displayTo).width > maxPartyW) {
+        while (displayTo.length > 3 && ctx.measureText(displayTo + "…").width > maxPartyW) {
+          displayTo = displayTo.slice(0, -1);
+        }
+        displayTo += "…";
+      }
+      ctx.fillText(displayTo, rightX + 54, cardY + 36);
 
       // Status under Receiver: Counts up or shows "Received"
       if (isSettle) {
@@ -274,18 +289,30 @@
       ctx.stroke();
 
       // Left Weight Token Label
-      window.SHARED_DRAW.card(ctx, leftTipX - 70, leftTipY + stringLen + 8, 140, 52, {
+      window.SHARED_DRAW.card(ctx, leftTipX - 75, leftTipY + stringLen + 8, 150, 52, {
         fill: themeColors.bgCard,
         stroke: window.THEME.colors.accent.emerald.border
       });
+      const maxAmtW = 135;
       ctx.font = window.THEME.typography.monoStat;
+      if (ctx.measureText(leftAmount).width > maxAmtW) {
+        ctx.font = "700 12.5px 'JetBrains Mono', monospace";
+      }
       ctx.fillStyle = window.THEME.colors.accent.emerald.main;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(leftAmount, leftTipX, leftTipY + stringLen + 26);
+
       ctx.font = window.THEME.typography.captionBold;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText(leftWeight, leftTipX, leftTipY + stringLen + 46);
+      let dispLeftW = leftWeight;
+      if (ctx.measureText(dispLeftW).width > maxAmtW) {
+        while (dispLeftW.length > 3 && ctx.measureText(dispLeftW + "…").width > maxAmtW) {
+          dispLeftW = dispLeftW.slice(0, -1);
+        }
+        dispLeftW += "…";
+      }
+      ctx.fillText(dispLeftW, leftTipX, leftTipY + stringLen + 46);
 
       // Right Pan
       ctx.strokeStyle = themeColors.borderStrong;
@@ -307,18 +334,29 @@
       ctx.stroke();
 
       // Right Weight Token Label
-      window.SHARED_DRAW.card(ctx, rightTipX - 70, rightTipY + stringLen + 8, 140, 52, {
+      window.SHARED_DRAW.card(ctx, rightTipX - 75, rightTipY + stringLen + 8, 150, 52, {
         fill: themeColors.bgCard,
         stroke: window.THEME.colors.accent.crimson.border
       });
       ctx.font = window.THEME.typography.monoStat;
+      if (ctx.measureText(rightAmount).width > maxAmtW) {
+        ctx.font = "700 12.5px 'JetBrains Mono', monospace";
+      }
       ctx.fillStyle = window.THEME.colors.accent.crimson.main;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(rightAmount, rightTipX, rightTipY + stringLen + 26);
+
       ctx.font = window.THEME.typography.captionBold;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText(rightWeight, rightTipX, rightTipY + stringLen + 46);
+      let dispRightW = rightWeight;
+      if (ctx.measureText(dispRightW).width > maxAmtW) {
+        while (dispRightW.length > 3 && ctx.measureText(dispRightW + "…").width > maxAmtW) {
+          dispRightW = dispRightW.slice(0, -1);
+        }
+        dispRightW += "…";
+      }
+      ctx.fillText(dispRightW, rightTipX, rightTipY + stringLen + 46);
 
       // 4. Settled Verdict Ribbon (Appears upon settling >= 65% and holds stable)
       if (isSettle) {

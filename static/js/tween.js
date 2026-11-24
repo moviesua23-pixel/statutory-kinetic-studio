@@ -148,10 +148,15 @@
 
     setLineIndex(lineIdx) {
       if (this.currentLineIdx !== lineIdx) {
-        // Snapshot current properties into previous for all actors
-        this.actors.forEach((data) => {
-          data.previous = Object.assign({}, data.current);
-        });
+        if (lineIdx < this.currentLineIdx) {
+          // If scrubbing backward, clear actor cache for scrub-order independence (A -> B -> A)
+          this.actors.clear();
+        } else {
+          // Snapshot current properties into previous for all actors
+          this.actors.forEach((data) => {
+            data.previous = Object.assign({}, data.current);
+          });
+        }
         this.currentLineIdx = lineIdx;
       }
     }

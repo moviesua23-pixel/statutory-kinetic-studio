@@ -52,21 +52,61 @@
       ctx.textBaseline = "middle";
       ctx.fillText("FIRST PARTY", leftX + 54, cardY + 28);
 
-      // Party Label & Subtitle
-      ctx.font = window.THEME.typography.titleBold;
-      ctx.fillStyle = themeColors.textPrimary;
-      ctx.fillText(leftLabel, leftX + 20, cardY + 95);
+      function renderPartyMeta(text, role, startX, topY, maxW) {
+        ctx.font = window.THEME.typography.titleBold;
+        ctx.fillStyle = themeColors.textPrimary;
+        ctx.textBaseline = "top";
+        const words = (text || "").split(" ");
+        let l1 = "", l2 = "";
+        for (let w of words) {
+          let test = l1 ? (l1 + " " + w) : w;
+          if (ctx.measureText(test).width <= maxW) {
+            l1 = test;
+          } else if (!l2) {
+            l2 = w;
+          } else {
+            let test2 = l2 + " " + w;
+            if (ctx.measureText(test2).width <= maxW) {
+              l2 = test2;
+            } else {
+              while (l2.length > 3 && ctx.measureText(l2 + "…").width > maxW) {
+                l2 = l2.slice(0, -1);
+              }
+              l2 += "…";
+              break;
+            }
+          }
+        }
+        ctx.fillText(l1, startX, topY);
+        let nextY = topY + 22;
+        if (l2) {
+          ctx.fillText(l2, startX, nextY);
+          nextY += 24;
+        } else {
+          nextY += 8;
+        }
 
-      ctx.font = window.THEME.typography.body;
-      ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText(leftRole, leftX + 20, cardY + 125);
+        ctx.font = window.THEME.typography.body;
+        ctx.fillStyle = themeColors.textSecondary;
+        let dispRole = role || "";
+        if (ctx.measureText(dispRole).width > maxW) {
+          while (dispRole.length > 3 && ctx.measureText(dispRole + "…").width > maxW) {
+            dispRole = dispRole.slice(0, -1);
+          }
+          dispRole += "…";
+        }
+        ctx.fillText(dispRole, startX, nextY);
 
-      // Decorative divider
-      ctx.strokeStyle = themeColors.border;
-      ctx.beginPath();
-      ctx.moveTo(leftX + 20, cardY + 155);
-      ctx.lineTo(leftX + cardW - 20, cardY + 155);
-      ctx.stroke();
+        // Divider
+        ctx.strokeStyle = themeColors.border;
+        ctx.beginPath();
+        ctx.moveTo(startX, nextY + 24);
+        ctx.lineTo(startX + maxW, nextY + 24);
+        ctx.stroke();
+      }
+
+      // Party Label & Subtitle (Left)
+      renderPartyMeta(leftLabel, leftRole, leftX + 20, cardY + 80, cardW - 40);
 
       // Right Column
       const rightX = rect.x + rect.w - cardW + (isReduced ? 0 : (1 - enterT) * 20);
@@ -88,19 +128,8 @@
       ctx.fillStyle = window.THEME.colors.accent.emerald.main;
       ctx.fillText("SECOND PARTY", rightX + 54, cardY + 28);
 
-      ctx.font = window.THEME.typography.titleBold;
-      ctx.fillStyle = themeColors.textPrimary;
-      ctx.fillText(rightLabel, rightX + 20, cardY + 95);
-
-      ctx.font = window.THEME.typography.body;
-      ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText(rightRole, rightX + 20, cardY + 125);
-
-      ctx.strokeStyle = themeColors.border;
-      ctx.beginPath();
-      ctx.moveTo(rightX + 20, cardY + 155);
-      ctx.lineTo(rightX + cardW - 20, cardY + 155);
-      ctx.stroke();
+      // Party Label & Subtitle (Right)
+      renderPartyMeta(rightLabel, rightRole, rightX + 20, cardY + 80, cardW - 40);
 
       ctx.restore();
 

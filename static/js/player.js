@@ -179,10 +179,20 @@
       return this.data.scenes[this.currentSlideIdx] || null;
     }
 
+    getEffectiveLineDuration(line) {
+      const baseDur = line?.duration_ms || DEFAULT_LINE_DURATION_MS;
+      // Requirement 4: Hold duration must be >= 1.5s in real time even at 1.25x speed.
+      // Settle hold ratio = 0.35.
+      // Real-time hold = (nominalDuration * 0.35) / playbackSpeed >= 1500ms
+      // => nominalDuration >= (1500 * playbackSpeed) / 0.35
+      const minRequiredNominal = (1500 * (this.playbackSpeed || 1.0)) / 0.35;
+      return Math.max(baseDur, Math.ceil(minRequiredNominal));
+    }
+
     getSlideDurationMs(slide) {
       if (!slide) return 10000;
       if (slide.lines && slide.lines.length > 0) {
-        return slide.lines.reduce((acc, l) => acc + (l.duration_ms || DEFAULT_LINE_DURATION_MS), 0);
+        return slide.lines.reduce((acc, l) => acc + this.getEffectiveLineDuration(l), 0);
       }
       return slide.duration_ms || 10000;
     }
@@ -209,7 +219,7 @@
       let activeLineDuration = DEFAULT_LINE_DURATION_MS;
 
       for (let i = 0; i < lines.length; i++) {
-        const dur = lines[i].duration_ms || DEFAULT_LINE_DURATION_MS;
+        const dur = this.getEffectiveLineDuration(lines[i]);
         if (timeMs >= lineAccumMs && timeMs < lineAccumMs + dur) {
           activeLineIdx = i;
           lineStartMs = lineAccumMs;
@@ -276,8 +286,11 @@
       const actionType = activeLine.action_type || "money_transfer";
       const actionPayload = activeLine.action_payload || {};
 
-      if (window.PILOT_ENGINES && window.PILOT_ENGINES[actionType]) {
-        window.PILOT_ENGINES[actionType](
+      const engineFn = (window.ACTION_ENGINES && window.ACTION_ENGINES[actionType]) ||
+                       (window.PILOT_ENGINES && window.PILOT_ENGINES[actionType]);
+
+      if (engineFn) {
+        engineFn(
           ctx,
           actionPayload,
           actionBounds || mainStageRect,
@@ -362,6 +375,7 @@
       document.querySelectorAll(".speed-btn").forEach(btn => {
         btn.classList.toggle("active", parseFloat(btn.dataset.speed) === this.playbackSpeed);
       });
+      this.updateSlideTimeline();
     }
 
     toggleVoice() {

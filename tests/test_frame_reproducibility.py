@@ -92,42 +92,84 @@ SAMPLE_PRESENTATION = {
 }
 
 class TestFrameReproducibility(unittest.TestCase):
-    def test_render_frame_deterministic_pixel_match(self):
-        """Verifies that rendering the exact same (slideIdx, timeMs) twice yields 100% identical pixel buffer."""
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page(viewport={"width": 1280, "height": 800})
-            page.goto("http://localhost:8090/static/index.html")
-            page.wait_for_selector("#stage_canvas", state="attached")
+    @classmethod
+    def setUpClass(cls):
+        cls.playwright = sync_playwright().start()
+        cls.browser = cls.playwright.chromium.launch(headless=True)
+        cls.page = cls.browser.new_page(viewport={"width": 1280, "height": 800})
+        cls.page.goto("http://localhost:8090/static/index.html")
+        cls.page.wait_for_selector("#stage_canvas", state="attached")
+        cls.page.evaluate("""(data) => {
+            document.getElementById('animation_section').style.display = 'flex';
+            window.PRESENTATION_PLAYER.init();
+            window.PRESENTATION_PLAYER.loadPresentation(data);
+            window.PRESENTATION_PLAYER.isPlaying = false;
+        }""", SAMPLE_PRESENTATION)
 
-            # Reveal animation section & load presentation
-            page.evaluate("""(data) => {
-                document.getElementById('animation_section').style.display = 'flex';
-                window.PRESENTATION_PLAYER.init();
-                window.PRESENTATION_PLAYER.loadPresentation(data);
-                window.PRESENTATION_PLAYER.isPlaying = false;
-            }""", SAMPLE_PRESENTATION)
+    @classmethod
+    def tearDownClass(cls):
+        cls.browser.close()
+        cls.playwright.stop()
 
-            # Test multiple timestamps: 1000ms (Perform phase), 3200ms (Settle phase)
-            for test_ms in [1000, 3200]:
-                # Render pass 1
-                img1_data = page.evaluate(f"""() => {{
-                    window.PRESENTATION_PLAYER.renderFrame(0, {test_ms});
-                    return document.getElementById('stage_canvas').toDataURL('image/png');
-                }}""")
+    def test_scrub_order_independence_aba(self):
+        """Requirement 1: Renders frame A, then B, then A again and asserts A is pixel-identical both times."""
+        # Frame A: slide 0 at 1200ms
+        img_A1 = self.page.evaluate("""() => {
+            window.PRESENTATION_PLAYER.renderFrame(0, 1200);
+            return document.getElementById('stage_canvas').toDataURL('image/png');
+        }""")
 
-                # Do something else in between
-                page.evaluate("() => { window.PRESENTATION_PLAYER.renderFrame(1, 2000); }")
+        # Frame B: slide 0 at 3600ms
+        self.page.evaluate("""() => {
+            window.PRESENTATION_PLAYER.renderFrame(0, 3600);
+        }""")
 
-                # Render pass 2 with identical arguments
-                img2_data = page.evaluate(f"""() => {{
-                    window.PRESENTATION_PLAYER.renderFrame(0, {test_ms});
-                    return document.getElementById('stage_canvas').toDataURL('image/png');
-                }}""")
+        # Frame A again: slide 0 at 1200ms
+        img_A2 = self.page.evaluate("""() => {
+            window.PRESENTATION_PLAYER.renderFrame(0, 1200);
+            return document.getElementById('stage_canvas').toDataURL('image/png');
+        }""")
 
-                self.assertEqual(img1_data, img2_data, f"Frame rendered at timeMs={test_ms} must be 100% byte-for-byte identical")
+        self.assertEqual(img_A1, img_A2, "Scrubbing backwards to Frame A must yield 100% pixel-identical buffer")
 
-            browser.close()
+    def test_settle_hold_65_and_100_pixel_identical(self):
+        """Requirement 2: The 65% and 100% frames are pixel-identical inside mainStageRegion (excluding progress dots)."""
+        # For all 3 pilot engines (slide 0, 1, 2)
+        for slide_idx in [0, 1, 2]:
+            # Extract mainStageRegion pixels (x: 48, y: 96, w: 1184, h: 480)
+            img_stage_65 = self.page.evaluate(f"""() => {{
+                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 2925); // 65% of 4500ms
+                const canvas = document.getElementById('stage_canvas');
+                const ctx = canvas.getContext('2d');
+                // Create sub-canvas for mainStageRegion
+                const sub = document.createElement('canvas');
+                sub.width = 1184; sub.height = 480;
+                const sctx = sub.getContext('2d');
+                // Scale ratio between canvas backing store and 1280x720
+                const sx = canvas.width / 1280;
+                const sy = canvas.height / 720;
+                sctx.drawImage(canvas, 48 * sx, 96 * sy, 1184 * sx, 480 * sy, 0, 0, 1184, 480);
+                return sub.toDataURL('image/png');
+            }}""")
+
+            img_stage_100 = self.page.evaluate(f"""() => {{
+                window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 4500); // 100% of 4500ms
+                const canvas = document.getElementById('stage_canvas');
+                const ctx = canvas.getContext('2d');
+                const sub = document.createElement('canvas');
+                sub.width = 1184; sub.height = 480;
+                const sctx = sub.getContext('2d');
+                const sx = canvas.width / 1280;
+                const sy = canvas.height / 720;
+                sctx.drawImage(canvas, 48 * sx, 96 * sy, 1184 * sx, 480 * sy, 0, 0, 1184, 480);
+                return sub.toDataURL('image/png');
+            }}""")
+
+            self.assertEqual(
+                img_stage_65,
+                img_stage_100,
+                f"Slide {slide_idx}: mainStageRegion at 65% (2925ms) and 100% (4500ms) must be 100% pixel-identical"
+            )
 
 if __name__ == '__main__':
     unittest.main()
