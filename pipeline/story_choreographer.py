@@ -6,21 +6,32 @@ from .key_rotator import KeyRotator
 
 UNIVERSAL_STORY_CHOREOGRAPHER_SYSTEM_PROMPT = """You are an expert Legal Scholar, Jurisprudential Educator, and Kinetic Presentation Choreographer across ALL fields of law (including Contract Law, Corporate Law, Constitutional Law, Commercial Law, Criminal Law, Property Law, Intellectual Property, Civil Procedure, Arbitration, Banking, FEMA, GST, and Tax).
 
-Your mission is to transform ANY statutory provision, section text, rule, or legal doctrine pasted by the user into a captivating, authentic 2-PHASE PEDAGOGICAL SCREENPLAY where EVERY SINGLE SENTENCE/LINE (until full stop) HAS ITS OWN DEDICATED VISUAL ANIMATION BEAT WITH DISTINCT SHAPES AND TEXT.
+Your mission is to transform ANY statutory provision, section text, rule, or legal doctrine pasted by the user into a captivating, authentic 2-PHASE PEDAGOGICAL SCREENPLAY where EVERY SINGLE SENTENCE/LINE (until full stop) HAS ITS OWN DEDICATED VISUAL ANIMATION BEAT WITH DISTINCT, SEMANTICALLY RELEVANT SHAPES AND TEXT.
 
 ============================================================
-CORE PEDAGOGICAL PRINCIPLE: LINE-BY-LINE VISUAL GRANULARITY
+CORE PEDAGOGICAL PRINCIPLE: TRUE VISUAL RELEVANCE FOR EVERY LINE
 ============================================================
-Do NOT group thoughts into generic paragraph summaries.
-Instead, for EVERY SCENE, break down the explanation into 2 to 4 distinct sequential LINES (sentences ending with a full stop).
-For EVERY SINGLE LINE, you MUST emit a dedicated visual beat:
-- A distinct, semantically appropriate shape icon.
-- A bold, punchy line title explaining what this specific line is about.
-- A clear visual description / condition / fact explained in this line.
-- The exact sentence spoken by the teacher for this line.
+NEVER make every line or point look the same!
+Inside each scene, break down the narrative/statute into 2 to 4 distinct sequential LINES (sentences ending in a full stop).
+For EVERY LINE, you MUST choose a specific "visual_archetype" that has direct visual relevance to that line:
 
-Multiple lines appear on the same slide sequentially:
-Line 1 enters first with Shape 1 & Text 1 -> Line 2 enters next with Shape 2 & Text 2 -> Line 3 enters next with Shape 3 & Text 3.
+1. "character_entity": Use when the line talks about a person, company, factory, mill, contractor, buyer, seller, party. (Renders as a prominent avatar profile card).
+   * Icons: "user", "building-2", "factory", "store", "briefcase". Theme: "indigo" or "sky".
+
+2. "document_contract": Use when the line talks about an agreement, contract, deed, clause, policy, notice, terms, promise. (Renders as a legal parchment document with folded corner and seal).
+   * Icons: "file-text", "contract", "stamp", "scroll", "badge-check". Theme: "sky" or "indigo".
+
+3. "breach_alert": Use when the line talks about breach of contract, delay, failure, default, accident, damage, dispute, injury, or violation. (Renders as an alert warning card with hazard accent).
+   * Icons: "alert-triangle", "shield-alert", "zap", "flame", "alert-circle". Theme: "crimson" or "amber".
+
+4. "financial_quantum": Use when the line talks about money, consideration, compensation, damages claim, profit, fee, fine, price, or penalty. (Renders as a financial quantum ledger with currency badge).
+   * Icons: "coins", "wallet", "receipt", "banknote", "chart-bar". Theme: "emerald" or "gold".
+
+5. "legal_verdict": Use when the line talks about a statutory rule, court ruling, judicial precedent, legal test, ratio decidendi, or remedy. (Renders as a judicial gavel decree card).
+   * Icons: "gavel", "scale", "award", "crown", "landmark". Theme: "purple" or "indigo".
+
+6. "timeline_deadline": Use when the line talks about dates, deadlines, time is of essence, months, delays, or chronology. (Renders as a calendar milestone card).
+   * Icons: "calendar", "clock", "timer", "hourglass". Theme: "amber" or "sky".
 
 ============================================================
 THE 2-PHASE SCREENPLAY ARCHITECTURE
@@ -33,32 +44,24 @@ THE 2-PHASE SCREENPLAY ARCHITECTURE
 2. PHASE 1: PRACTICAL STORY EXPOSITION (Scenes 1 & 2)
 Goal: Explain the complete, immersive real-life factual story BEFORE touching statutory technicalities.
 - Scene 1 (Phase 1, Act 1A): The Characters, Relationship & Initial Agreement.
-  * Line 1: Introduction of Party A (character name, Kerala/Indian city, business role).
-  * Line 2: Introduction of Party B & the transaction/contract entered into.
-  * Line 3: The consideration, timeline, or performance promised between them.
+  * Line 1: Introduction of Party A (character_entity).
+  * Line 2: Introduction of Party B & the transaction/contract entered into (document_contract).
+  * Line 3: The consideration, timeline, or performance promised (financial_quantum or timeline_deadline).
 - Scene 2 (Phase 1, Act 1B): The Turning Point, Triggering Event, Breach, or Dispute.
-  * Line 1: The triggering event or failure (breach of contract, non-payment, accident, non-compliance).
-  * Line 2: The direct, natural loss or immediate consequence suffered by the aggrieved party.
-  * Line 3: The disputed claim or special/remote damage demand that ignites the legal conflict.
+  * Line 1: The triggering event or failure to perform (breach_alert).
+  * Line 2: The direct, natural loss suffered (financial_quantum or breach_alert).
+  * Line 3: The disputed special/remote damage claim or legal conflict (breach_alert or legal_verdict).
 
 3. PHASE 2: POINT-BY-POINT STATUTORY DECONSTRUCTION (Scenes 3 to 5/6)
 Goal: Take the specific plot points from the story above and deconstruct them strictly using the EXACT statutory provisions and ingredients of THIS SPECIFIC ACT.
 - Scene 3 (Phase 2, Point 1): Essential Ingredient 1 & Primary Statutory Rule.
-  * Line 1: State the first statutory requirement directly from the section.
-  * Line 2: Map it to the story facts to show how Party A/B complies or violates it.
-  * Line 3: The legal test or standard applied under this rule.
+  * Deconstruct how the story facts meet or violate the first essential condition using "legal_verdict" and "document_contract".
 - Scene 4 (Phase 2, Point 2): Essential Ingredient 2 / Defense / Safe Harbor / Exception.
-  * Line 1: State the second condition, exception, proviso, or safe harbor.
-  * Line 2: Analyze whether the party has a valid defense, excuse, or exemption.
-  * Line 3: The statutory boundary or threshold.
-- Scene 5 (Phase 2, Point 3): Liability, Quantum of Compensation, Remedy, or Computation.
-  * Line 1: The statutory consequence (damages, penalty, specific performance, injunction, or tax liability).
-  * Line 2: How the quantum or measure of remedy is legally determined.
-  * Line 3: Final enforceable statutory order or decree.
+  * Analyze defenses, remote damage rules, provisos, or safe harbors using "legal_verdict" or "breach_alert".
+- Scene 5 (Phase 2, Point 3): Liability, Quantum of Compensation, Remedy, or Enforcement.
+  * Exact measure of compensation, damages, penalty, or remedy using "financial_quantum" and "legal_verdict".
 - Scene 6 (Phase 2, Point 4): Judicial Verdict & Final Exam/Filing Takeaway.
-  * Line 1: Landmark judicial ratio or legal precedent (e.g. Hadley v. Baxendale, Salomon, Carlill, etc.).
-  * Line 2: The core legal maxim or takeaway rule to remember for exams and practice.
-  * Line 3: Actionable takeaway advice for legal drafting or statutory compliance.
+  * Landmark judicial ratio (e.g. Hadley v. Baxendale, Salomon, Carlill, etc.) using "legal_verdict".
 
 ============================================================
 AUDIO & VOICE PRONUNCIATION RULES
@@ -89,6 +92,7 @@ Return valid JSON matching this schema:
           "sentence": "First full sentence explaining Character A in Kochi.",
           "line_title": "Party A: Kochi Textile Mill",
           "line_detail": "Manufacturer needing specialized machinery for seasonal peak production.",
+          "visual_archetype": "character_entity",
           "shape_icon": "building-2",
           "theme": "indigo"
         },
@@ -97,7 +101,8 @@ Return valid JSON matching this schema:
           "sentence": "Second full sentence explaining Party B and the delivery agreement.",
           "line_title": "Party B: Logistics Contractor",
           "line_detail": "Enters registered agreement to deliver machinery by 1st October.",
-          "shape_icon": "truck",
+          "visual_archetype": "document_contract",
+          "shape_icon": "contract",
           "theme": "sky"
         },
         {
@@ -105,6 +110,7 @@ Return valid JSON matching this schema:
           "sentence": "Third full sentence explaining the consideration and agreed terms.",
           "line_title": "Agreed Consideration & Timeline",
           "line_detail": "Contract consideration of ₹5,00,000 with strict time-essence clause.",
+          "visual_archetype": "financial_quantum",
           "shape_icon": "coins",
           "theme": "emerald"
         }
@@ -118,7 +124,7 @@ def generate_story_screenplay(rotator: KeyRotator, provision_text: str, topic_hi
     """Generates the universal line-by-line 2-Phase Pedagogical Story Screenplay for ANY law using Gemini."""
     models_to_try = ["gemini-3-flash-preview", "gemini-3.1-flash-lite-preview", "gemini-3.1-flash-lite"]
 
-    user_prompt = f"""Analyze this statutory text, identify its Act and Section, and create a comprehensive 2-Phase Pedagogical Screenplay where EVERY SENTENCE/LINE HAS A DEDICATED VISUAL SHAPE AND TEXT BEAT:
+    user_prompt = f"""Analyze this statutory text, identify its Act and Section, and create a comprehensive 2-Phase Pedagogical Screenplay where EVERY SENTENCE/LINE HAS A DEDICATED, VISUALLY RELEVANT SHAPE ARCHETYPE AND TEXT BEAT:
 
 STATUTORY PROVISION TEXT:
 \"\"\"
@@ -154,7 +160,7 @@ Optional Hint/Context from user: {topic_hint or 'None provided'}
                             "scenes": raw_json
                         }
 
-                print(f"[STORY CHOREOGRAPHER] Generated line-by-line 2-Phase screenplay using {m} in {round(time.time() - t0, 2)}s for: {raw_json.get('act_name')} - {raw_json.get('section_code')}", flush=True)
+                print(f"[STORY CHOREOGRAPHER] Generated visually-diverse 2-Phase screenplay using {m} in {round(time.time() - t0, 2)}s for: {raw_json.get('act_name')} - {raw_json.get('section_code')}", flush=True)
                 return raw_json
             except Exception as e:
                 last_err = e

@@ -1,7 +1,7 @@
 // -*- coding: utf-8 -*-
 // static/js/presentation_player.js
-// 100% Dynamic Line-by-Line Kinetic Animation Player
-// Every single line (sentence) has its own dedicated visual shape & text card!
+// 100% Dynamic, Semantically Relevant Line-by-Line Kinetic Animation Player
+// Every single line has a UNIQUE PHYSICAL SHAPE ARCHETYPE matching its legal content!
 
 (function() {
   window.PRESENTATION_PLAYER = {};
@@ -46,7 +46,7 @@
       const isPhase1 = sc.screenplay_phase && sc.screenplay_phase.includes("PHASE 1");
       btn.className = `scene-tab-btn ${idx === currentSceneIdx ? "active" : ""} ${isPhase1 ? "phase-story" : "phase-statute"}`;
       const prefix = isPhase1 ? "📖" : "⚖️";
-      btn.innerHTML = `${prefix} Slide ${idx + 1}: ${sc.tab_title || `Scene ${idx+1}`}`;
+      btn.innerHTML = `${prefix} Slide ${idx + 1}: ${sc.tab_title || `Slide ${idx+1}`}`;
       btn.onclick = () => switchScene(idx);
       tabsContainer.appendChild(btn);
     });
@@ -57,7 +57,6 @@
     currentSceneIdx = idx;
     currentTimeMs = 0;
 
-    // Update Tab active classes
     const tabs = document.querySelectorAll("#anim_scene_tabs .scene-tab-btn");
     tabs.forEach((t, i) => t.classList.toggle("active", i === idx));
 
@@ -115,26 +114,6 @@
   }
 
   // ==========================================
-  // SMART DYNAMIC ICON MATCHER (FALLBACK)
-  // ==========================================
-  function getSmartIcon(text, fallback = "file-text") {
-    if (!text) return fallback;
-    const s = text.toLowerCase();
-    if (s.includes("user") || s.includes("person") || s.includes("buyer") || s.includes("seller") || s.includes("party") || s.includes("director") || s.includes("promoter") || s.includes("mill") || s.includes("contractor") || s.includes("architect")) return "user";
-    if (s.includes("company") || s.includes("corporate") || s.includes("firm") || s.includes("hospital") || s.includes("factory") || s.includes("enterprise") || s.includes("business") || s.includes("boutique")) return "building-2";
-    if (s.includes("contract") || s.includes("agreement") || s.includes("deed") || s.includes("clause") || s.includes("terms") || s.includes("notice")) return "file-text";
-    if (s.includes("money") || s.includes("price") || s.includes("consideration") || s.includes("amount") || s.includes("payment") || s.includes("profit") || s.includes("fee") || s.includes("rupee") || s.includes("lakh")) return "coins";
-    if (s.includes("loss") || s.includes("breach") || s.includes("damage") || s.includes("remote") || s.includes("default") || s.includes("dispute") || s.includes("injury")) return "alert-triangle";
-    if (s.includes("court") || s.includes("judge") || s.includes("law") || s.includes("section") || s.includes("order") || s.includes("precedent") || s.includes("verdict")) return "gavel";
-    if (s.includes("shield") || s.includes("safe") || s.includes("exemption") || s.includes("remedy") || s.includes("defence") || s.includes("exception")) return "shield-check";
-    if (s.includes("time") || s.includes("date") || s.includes("month") || s.includes("year") || s.includes("deadline") || s.includes("delay")) return "clock";
-    if (s.includes("goods") || s.includes("delivery") || s.includes("shipment") || s.includes("transport") || s.includes("machinery") || s.includes("truck")) return "truck";
-    if (s.includes("land") || s.includes("property") || s.includes("house") || s.includes("building") || s.includes("flat")) return "residential_house";
-    if (s.includes("valid") || s.includes("condition") || s.includes("rule") || s.includes("approved")) return "badge-check";
-    return fallback;
-  }
-
-  // ==========================================
   // ANIMATION LOOP & CANVAS RENDERER
   // ==========================================
   function renderLoop(now) {
@@ -161,9 +140,11 @@
     if (!ctx) return;
     ctx.clearRect(0, 0, 1000, 500);
 
-    // Background & subtle grid
+    // Canvas Background
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, 1000, 500);
+
+    // Subtle Grid
     ctx.strokeStyle = "#F1F5F9";
     ctx.lineWidth = 1;
     for (let x = 0; x < 1000; x += 50) {
@@ -181,7 +162,7 @@
     const sc = activeData.scenes[currentSceneIdx];
     const isPhase1 = sc.screenplay_phase && sc.screenplay_phase.includes("PHASE 1");
 
-    // Update time indicator
+    // Update time display
     const linesCount = sc.lines?.length || 3;
     const maxMs = linesCount * 2800 + 1000;
     const timeDisplay = document.getElementById("anim_time_display");
@@ -194,13 +175,12 @@
     // Top Header Banner
     drawTopHeaderBanner(sc, isPhase1);
 
-    // Render Line-by-Line Animation
+    // Render Line-by-Line with Distinct Visual Archetypes
     drawLineByLineScene(sc, isPhase1);
   }
 
   function drawTopHeaderBanner(sc, isPhase1) {
     ctx.save();
-    // Act & Section Badge
     const actBadgeText = (activeData.act_name || "STATUTE").toUpperCase();
     const secBadgeText = (activeData.section_code || "PROVISION").toUpperCase();
     
@@ -225,46 +205,33 @@
   }
 
   // ============================================================
-  // LINE-BY-LINE DYNAMIC SCENE RENDERER (EVERY SENTENCE IS SHOWN)
+  // LINE-BY-LINE DYNAMIC RENDERER: DIVERSE PHYSICAL SHAPES
   // ============================================================
   function drawLineByLineScene(sc, isPhase1) {
-    let lines = sc.lines;
-    // Fallback if legacy JSON without lines
-    if (!lines || lines.length === 0) {
-      const sentences = (sc.dialogue || "").split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
-      lines = sentences.map((sent, i) => ({
-        line_num: i + 1,
-        sentence: sent + ".",
-        line_title: sc.characters_or_elements?.[i] || sc.key_points?.[i] || `Fact / Rule ${i+1}`,
-        line_detail: sc.key_points?.[i] || sent,
-        shape_icon: getSmartIcon(sent),
-        theme: i === 0 ? "indigo" : (i === 1 ? "sky" : (i === 2 ? "amber" : "emerald"))
-      }));
-    }
-
-    const count = lines.length;
-    const startY = sc.story_point_ref ? 115 : 95;
-    const cardH = 225;
+    const lines = sc.lines || [];
+    const count = Math.max(1, lines.length);
+    const startY = sc.story_point_ref ? 110 : 90;
+    const cardH = 235;
     const totalW = 880;
     const gap = 18;
     const cardW = Math.floor((totalW - (count - 1) * gap) / count);
     const startX = 60;
     const stepDurationMs = 2800;
 
-    // If Phase 2, render Reference Banner
+    // Phase 2 Reference Banner
     if (sc.story_point_ref) {
       ctx.save();
       ctx.fillStyle = "#FFFBEB";
       ctx.strokeStyle = "#FDE68A";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.roundRect(startX, 65, totalW, 34, 6);
+      ctx.roundRect(startX, 62, totalW, 34, 6);
       ctx.fill(); ctx.stroke();
 
       ctx.fillStyle = "#B45309";
       ctx.font = `800 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
       ctx.textAlign = "left";
-      ctx.fillText(`🎯 ${sc.story_point_ref}`, startX + 16, 87);
+      ctx.fillText(`🎯 ${sc.story_point_ref}`, startX + 16, 84);
       ctx.restore();
     }
 
@@ -283,64 +250,31 @@
       }
 
       const cardX = startX + idx * (cardW + gap);
+      const archetype = line.visual_archetype || detectArchetypeFallback(line);
 
-      ctx.save();
-      ctx.globalAlpha = p;
-
-      // Card Background & Shadow
-      ctx.fillStyle = "#FFFFFF";
-      const th = line.theme || (idx === 0 ? "indigo" : (idx === 1 ? "sky" : (idx === 2 ? "amber" : "emerald")));
-      
-      if (isCurrentActive) {
-        ctx.strokeStyle = th === "crimson" ? "#DC2626" : "#4F46E5";
-        ctx.lineWidth = 3;
-        ctx.shadowColor = "rgba(79, 70, 229, 0.22)";
-        ctx.shadowBlur = 16;
-        ctx.shadowOffsetY = 6;
-      } else {
-        ctx.strokeStyle = "#CBD5E1";
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = "rgba(15, 23, 42, 0.05)";
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 3;
+      // Render Distinct Physical Shape Archetype
+      switch(archetype) {
+        case "character_entity":
+          drawCharacterEntityCard(line, cardX, startY, cardW, cardH, p, isCurrentActive, idx + 1);
+          break;
+        case "document_contract":
+          drawDocumentContractCard(line, cardX, startY, cardW, cardH, p, isCurrentActive, idx + 1);
+          break;
+        case "breach_alert":
+          drawBreachAlertCard(line, cardX, startY, cardW, cardH, p, isCurrentActive, idx + 1);
+          break;
+        case "financial_quantum":
+          drawFinancialQuantumCard(line, cardX, startY, cardW, cardH, p, isCurrentActive, idx + 1);
+          break;
+        case "legal_verdict":
+          drawLegalVerdictCard(line, cardX, startY, cardW, cardH, p, isCurrentActive, idx + 1);
+          break;
+        case "timeline_deadline":
+          drawTimelineDeadlineCard(line, cardX, startY, cardW, cardH, p, isCurrentActive, idx + 1);
+          break;
+        default:
+          drawCharacterEntityCard(line, cardX, startY, cardW, cardH, p, isCurrentActive, idx + 1);
       }
-
-      ctx.beginPath();
-      ctx.roundRect(cardX, startY, cardW, cardH, 12);
-      ctx.fill(); ctx.stroke();
-      ctx.shadowColor = "transparent";
-
-      // Line Number Pill (Top-Left of Card)
-      ctx.fillStyle = isCurrentActive ? "#4F46E5" : "#F1F5F9";
-      ctx.beginPath();
-      ctx.roundRect(cardX + 12, startY + 12, 60, 22, 4);
-      ctx.fill();
-
-      ctx.fillStyle = isCurrentActive ? "#FFFFFF" : "#64748B";
-      ctx.font = `800 ${Math.round(10 * fontScale)}px JetBrains Mono, monospace`;
-      ctx.textAlign = "center";
-      ctx.fillText(`LINE ${idx + 1}`, cardX + 42, startY + 27);
-
-      // Distinct Vector Badge Shape for this specific Line
-      const shapeIcon = line.shape_icon || getSmartIcon(line.line_title + " " + line.line_detail);
-      const iconCenterX = cardX + cardW / 2;
-      const iconCenterY = startY + 54;
-      if (window.drawColorfulBadgeShape) {
-        window.drawColorfulBadgeShape(ctx, shapeIcon, iconCenterX, iconCenterY, 26, th, "circle");
-      }
-
-      // Line Title (Explaining what this line is about)
-      ctx.fillStyle = isCurrentActive ? "#0F172A" : "#334155";
-      ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      ctx.textAlign = "center";
-      wrapCanvasText(ctx, line.line_title || `Line ${idx + 1}`, iconCenterX, startY + 110, cardW - 20, 18, "center", 2);
-
-      // Line Detail (Statutory fact or condition)
-      ctx.fillStyle = "#64748B";
-      ctx.font = `600 ${Math.round(11 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      wrapCanvasText(ctx, line.line_detail || line.sentence || "", iconCenterX, startY + 155, cardW - 22, 16, "center", 3);
-
-      ctx.restore();
 
       // Connecting kinetic animated line between card[i] and card[i+1]
       if (idx < count - 1 && p > 0.8) {
@@ -392,6 +326,375 @@
       });
       narrationEl.innerHTML = html;
     }
+  }
+
+  function detectArchetypeFallback(line) {
+    const s = ((line.line_title || "") + " " + (line.line_detail || "")).toLowerCase();
+    if (s.includes("breach") || s.includes("fail") || s.includes("delay") || s.includes("loss") || s.includes("dispute") || s.includes("damage")) return "breach_alert";
+    if (s.includes("contract") || s.includes("agreement") || s.includes("deed") || s.includes("terms") || s.includes("clause")) return "document_contract";
+    if (s.includes("money") || s.includes("rupee") || s.includes("amount") || s.includes("price") || s.includes("compensation") || s.includes("consideration")) return "financial_quantum";
+    if (s.includes("court") || s.includes("judge") || s.includes("verdict") || s.includes("precedent") || s.includes("rule") || s.includes("section")) return "legal_verdict";
+    if (s.includes("date") || s.includes("time") || s.includes("month") || s.includes("deadline")) return "timeline_deadline";
+    return "character_entity";
+  }
+
+  // ============================================================
+  // SHAPE ARCHETYPE 1: CHARACTER / ENTITY PROFILE CARD
+  // ============================================================
+  function drawCharacterEntityCard(line, x, y, w, h, p, isCurrentActive, lineNum) {
+    ctx.save();
+    ctx.globalAlpha = p;
+
+    // Elevated Profile Card with Top Header Band
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = isCurrentActive ? "#4F46E5" : "#CBD5E1";
+    ctx.lineWidth = isCurrentActive ? 3 : 1.5;
+    if (isCurrentActive) {
+      ctx.shadowColor = "rgba(79, 70, 229, 0.25)";
+      ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    }
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 14);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Top Header Banner
+    ctx.fillStyle = isCurrentActive ? "#EEF2FF" : "#F8FAFC";
+    ctx.beginPath();
+    ctx.roundRect(x + 2, y + 2, w - 4, 46, [12, 12, 0, 0]);
+    ctx.fill();
+
+    // Line Badge
+    ctx.fillStyle = isCurrentActive ? "#4F46E5" : "#64748B";
+    ctx.font = `800 ${Math.round(10 * fontScale)}px JetBrains Mono, monospace`;
+    ctx.textAlign = "left";
+    ctx.fillText(`👤 ENTITY · LINE ${lineNum}`, x + 14, y + 28);
+
+    // Large Avatar Frame
+    const iconKey = line.shape_icon || "user";
+    if (window.drawColorfulBadgeShape) {
+      window.drawColorfulBadgeShape(ctx, iconKey, x + w / 2, y + 68, 28, isCurrentActive ? "indigo" : "sky", "circle");
+    }
+
+    // Entity Title
+    ctx.fillStyle = "#0F172A";
+    ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.textAlign = "center";
+    wrapCanvasText(ctx, line.line_title || "Entity Name", x + w / 2, y + 125, w - 18, 18, "center", 2);
+
+    // Role / Entity Description
+    ctx.fillStyle = "#475569";
+    ctx.font = `600 ${Math.round(11 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, line.line_detail || "", x + w / 2, y + 165, w - 20, 16, "center", 3);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // SHAPE ARCHETYPE 2: DOCUMENT / CONTRACT PARCHMENT (FOLDED CORNER)
+  // ============================================================
+  function drawDocumentContractCard(line, x, y, w, h, p, isCurrentActive, lineNum) {
+    ctx.save();
+    ctx.globalAlpha = p;
+
+    const fold = 24; // 45-degree folded corner size
+
+    // Parchment Polygon Path with Top-Right Fold
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w - fold, y);
+    ctx.lineTo(x + w, y + fold);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.closePath();
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = isCurrentActive ? "#0284C7" : "#CBD5E1";
+    ctx.lineWidth = isCurrentActive ? 3 : 1.5;
+    if (isCurrentActive) {
+      ctx.shadowColor = "rgba(2, 132, 199, 0.25)";
+      ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    }
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Folded Triangle Geometry
+    ctx.beginPath();
+    ctx.moveTo(x + w - fold, y);
+    ctx.lineTo(x + w - fold, y + fold);
+    ctx.lineTo(x + w, y + fold);
+    ctx.closePath();
+    ctx.fillStyle = isCurrentActive ? "#BAE6FD" : "#E2E8F0";
+    ctx.strokeStyle = isCurrentActive ? "#0284C7" : "#CBD5E1";
+    ctx.lineWidth = 1.5;
+    ctx.fill(); ctx.stroke();
+
+    // Top Header
+    ctx.fillStyle = isCurrentActive ? "#0284C7" : "#64748B";
+    ctx.font = `800 ${Math.round(10 * fontScale)}px JetBrains Mono, monospace`;
+    ctx.textAlign = "left";
+    ctx.fillText(`📜 CONTRACT · LINE ${lineNum}`, x + 14, y + 26);
+
+    // Contract Stamp/Seal Shape
+    const iconKey = line.shape_icon || "contract";
+    if (window.drawColorfulBadgeShape) {
+      window.drawColorfulBadgeShape(ctx, iconKey, x + w / 2, y + 62, 26, "sky", "squircle");
+    }
+
+    // Title
+    ctx.fillStyle = "#0F172A";
+    ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.textAlign = "center";
+    wrapCanvasText(ctx, line.line_title || "Contract Clause", x + w / 2, y + 118, w - 20, 18, "center", 2);
+
+    // Terms detail
+    ctx.fillStyle = "#334155";
+    ctx.font = `600 ${Math.round(11 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, line.line_detail || "", x + w / 2, y + 160, w - 20, 16, "center", 3);
+
+    // Simulated bottom signature line
+    ctx.strokeStyle = "#CBD5E1";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + 20, y + h - 16);
+    ctx.lineTo(x + w - 20, y + h - 16);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // SHAPE ARCHETYPE 3: BREACH / DISPUTE ALERT CARD (WARNING ACCENT)
+  // ============================================================
+  function drawBreachAlertCard(line, x, y, w, h, p, isCurrentActive, lineNum) {
+    ctx.save();
+    ctx.globalAlpha = p;
+
+    // Chamfered Octagonal Warning Card
+    const chamfer = 12;
+    ctx.beginPath();
+    ctx.moveTo(x + chamfer, y);
+    ctx.lineTo(x + w - chamfer, y);
+    ctx.lineTo(x + w, y + chamfer);
+    ctx.lineTo(x + w, y + h - chamfer);
+    ctx.lineTo(x + w - chamfer, y + h);
+    ctx.lineTo(x + chamfer, y + h);
+    ctx.lineTo(x, y + h - chamfer);
+    ctx.lineTo(x, y + chamfer);
+    ctx.closePath();
+
+    ctx.fillStyle = isCurrentActive ? "#FFF5F5" : "#FFFFFF";
+    ctx.strokeStyle = "#DC2626";
+    ctx.lineWidth = isCurrentActive ? 3.5 : 2;
+    if (isCurrentActive) {
+      ctx.shadowColor = "rgba(220, 38, 38, 0.35)";
+      ctx.shadowBlur = 20; ctx.shadowOffsetY = 6;
+    }
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Hazard Stripes Top Accent Bar
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = "#DC2626";
+    ctx.fillRect(x, y, w, 32);
+    ctx.fillStyle = "#FEE2E2";
+    for (let hx = x - 20; hx < x + w + 20; hx += 16) {
+      ctx.beginPath();
+      ctx.moveTo(hx, y);
+      ctx.lineTo(hx + 8, y);
+      ctx.lineTo(hx + 18, y + 32);
+      ctx.lineTo(hx + 10, y + 32);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Header Label on Hazard Bar
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = `800 ${Math.round(10.5 * fontScale)}px JetBrains Mono, monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText(`⚠️ BREACH / DISPUTE · LINE ${lineNum}`, x + w / 2, y + 21);
+
+    // Alert Triangle / Flame Icon Shape
+    const iconKey = line.shape_icon || "alert-triangle";
+    if (window.drawColorfulBadgeShape) {
+      window.drawColorfulBadgeShape(ctx, iconKey, x + w / 2, y + 68, 27, "crimson", "circle");
+    }
+
+    // Breach Title
+    ctx.fillStyle = "#991B1B";
+    ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.textAlign = "center";
+    wrapCanvasText(ctx, line.line_title || "Breach of Contract", x + w / 2, y + 125, w - 18, 18, "center", 2);
+
+    // Loss Description
+    ctx.fillStyle = "#450A0A";
+    ctx.font = `600 ${Math.round(11 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, line.line_detail || "", x + w / 2, y + 165, w - 20, 16, "center", 3);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // SHAPE ARCHETYPE 4: FINANCIAL QUANTUM / CONSIDERATION LEDGER
+  // ============================================================
+  function drawFinancialQuantumCard(line, x, y, w, h, p, isCurrentActive, lineNum) {
+    ctx.save();
+    ctx.globalAlpha = p;
+
+    // Financial Ledger with Double Border
+    ctx.fillStyle = isCurrentActive ? "#F0FDF4" : "#FFFFFF";
+    ctx.strokeStyle = "#059669";
+    ctx.lineWidth = isCurrentActive ? 3 : 1.5;
+    if (isCurrentActive) {
+      ctx.shadowColor = "rgba(5, 150, 105, 0.25)";
+      ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    }
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 12);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Inner Ledger Border
+    ctx.strokeStyle = "#A7F3D0";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 6, y + 6, w - 12, h - 12);
+
+    // Top Currency Header
+    ctx.fillStyle = "#059669";
+    ctx.font = `800 ${Math.round(10 * fontScale)}px JetBrains Mono, monospace`;
+    ctx.textAlign = "left";
+    ctx.fillText(`💰 QUANTUM / PRICE · LINE ${lineNum}`, x + 14, y + 26);
+
+    // Coins / Cash Shape
+    const iconKey = line.shape_icon || "coins";
+    if (window.drawColorfulBadgeShape) {
+      window.drawColorfulBadgeShape(ctx, iconKey, x + w / 2, y + 60, 26, "emerald", "circle");
+    }
+
+    // Title
+    ctx.fillStyle = "#065F46";
+    ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.textAlign = "center";
+    wrapCanvasText(ctx, line.line_title || "Financial Consideration", x + w / 2, y + 115, w - 18, 18, "center", 2);
+
+    // Amount / Measure Detail
+    ctx.fillStyle = "#047857";
+    ctx.font = `700 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, line.line_detail || "", x + w / 2, y + 155, w - 20, 16, "center", 3);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // SHAPE ARCHETYPE 5: LEGAL VERDICT / JUDICIAL DECREE
+  // ============================================================
+  function drawLegalVerdictCard(line, x, y, w, h, p, isCurrentActive, lineNum) {
+    ctx.save();
+    ctx.globalAlpha = p;
+
+    // Judicial Pedestal Card
+    ctx.fillStyle = isCurrentActive ? "#FAF5FF" : "#FFFFFF";
+    ctx.strokeStyle = isCurrentActive ? "#7E22CE" : "#CBD5E1";
+    ctx.lineWidth = isCurrentActive ? 3 : 1.5;
+    if (isCurrentActive) {
+      ctx.shadowColor = "rgba(126, 34, 206, 0.25)";
+      ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    }
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 12);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Top Purple Ribbon
+    ctx.fillStyle = "#7E22CE";
+    ctx.beginPath();
+    ctx.roundRect(x + 12, y + 10, w - 24, 24, 4);
+    ctx.fill();
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = `800 ${Math.round(10 * fontScale)}px JetBrains Mono, monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText(`⚖️ JUDICIAL RULE · LINE ${lineNum}`, x + w / 2, y + 26);
+
+    // Gavel / Scale Shape
+    const iconKey = line.shape_icon || "gavel";
+    if (window.drawColorfulBadgeShape) {
+      window.drawColorfulBadgeShape(ctx, iconKey, x + w / 2, y + 64, 26, "purple", "squircle");
+    }
+
+    // Legal Ratio Title
+    ctx.fillStyle = "#581C87";
+    ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.textAlign = "center";
+    wrapCanvasText(ctx, line.line_title || "Statutory Principle", x + w / 2, y + 120, w - 18, 18, "center", 2);
+
+    // Rule Ratio Description
+    ctx.fillStyle = "#3B0764";
+    ctx.font = `600 ${Math.round(11 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, line.line_detail || "", x + w / 2, y + 160, w - 20, 16, "center", 3);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // SHAPE ARCHETYPE 6: TIMELINE / DEADLINE CALENDAR BINDER
+  // ============================================================
+  function drawTimelineDeadlineCard(line, x, y, w, h, p, isCurrentActive, lineNum) {
+    ctx.save();
+    ctx.globalAlpha = p;
+
+    // Calendar Card Body
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = isCurrentActive ? "#D97706" : "#CBD5E1";
+    ctx.lineWidth = isCurrentActive ? 3 : 1.5;
+    if (isCurrentActive) {
+      ctx.shadowColor = "rgba(217, 119, 6, 0.25)";
+      ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    }
+    ctx.beginPath();
+    ctx.roundRect(x, y + 8, w, h - 8, 12);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Calendar Spiral Binder Rings (at top)
+    const ringSpacing = w / 4;
+    ctx.fillStyle = "#64748B";
+    for (let r = 1; r <= 3; r++) {
+      ctx.beginPath();
+      ctx.roundRect(x + r * ringSpacing - 4, y, 8, 16, 4);
+      ctx.fill();
+    }
+
+    // Top Amber Bar
+    ctx.fillStyle = "#FEF3C7";
+    ctx.beginPath();
+    ctx.roundRect(x + 2, y + 16, w - 4, 30, [8, 8, 0, 0]);
+    ctx.fill();
+
+    ctx.fillStyle = "#B45309";
+    ctx.font = `800 ${Math.round(10 * fontScale)}px JetBrains Mono, monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText(`⏱️ DEADLINE · LINE ${lineNum}`, x + w / 2, y + 36);
+
+    // Clock/Calendar Icon Shape
+    const iconKey = line.shape_icon || "clock";
+    if (window.drawColorfulBadgeShape) {
+      window.drawColorfulBadgeShape(ctx, iconKey, x + w / 2, y + 74, 26, "amber", "circle");
+    }
+
+    // Deadline Title
+    ctx.fillStyle = "#92400E";
+    ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.textAlign = "center";
+    wrapCanvasText(ctx, line.line_title || "Statutory Window", x + w / 2, y + 130, w - 18, 18, "center", 2);
+
+    // Detail
+    ctx.fillStyle = "#451A03";
+    ctx.font = `600 ${Math.round(11 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, line.line_detail || "", x + w / 2, y + 170, w - 20, 16, "center", 3);
+
+    ctx.restore();
   }
 
   function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, align = "center", maxLines = 4) {

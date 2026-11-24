@@ -133,9 +133,10 @@ function renderStoryReview(data) {
             LINE ${lIdx + 1}
           </span>
           <div style="flex:1;">
-            <div style="font-size:12.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; gap:6px;">
+            <div style="font-size:12.5px; font-weight:800; color:#0F172A; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
               <span>🏷️ <strong>${l.line_title || `Line ${lIdx+1}`}</strong></span>
-              <span style="font-size:10.5px; font-weight:700; color:#64748B; background:#FFF; border:1px solid #CBD5E1; padding:1px 6px; border-radius:4px;">Shape: ${l.shape_icon || 'badge'}</span>
+              <span style="font-size:10px; font-weight:800; color:#4338CA; background:#EEF2FF; border:1px solid #C7D2FE; padding:1px 6px; border-radius:4px;">Archetype: ${l.visual_archetype || 'custom'}</span>
+              <span style="font-size:10.5px; font-weight:700; color:#64748B; background:#FFF; border:1px solid #CBD5E1; padding:1px 6px; border-radius:4px;">Icon: ${l.shape_icon || 'badge'}</span>
             </div>
             <div style="font-size:12px; font-weight:600; color:#475569; margin-top:2px;">
               ${l.line_detail || ''}
