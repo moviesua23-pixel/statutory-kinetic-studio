@@ -1,6 +1,6 @@
 // -*- coding: utf-8 -*-
 // static/js/studio.js
-// Step 1: Universal 2-Phase Pedagogical Story Generator & Review Console
+// Universal 2-Phase Pedagogical Story Generator & Kinetic Animation Preview Controller
 
 let LATEST_STORY_DATA = null;
 
@@ -16,9 +16,11 @@ async function generateTwoPhaseStory() {
   const btn = document.getElementById("btn_generate");
   const spinner = document.getElementById("loading_spinner");
   const outputSection = document.getElementById("output_section");
+  const animSection = document.getElementById("animation_section");
 
   btn.disabled = true;
   spinner.style.display = "flex";
+  if (animSection) animSection.style.display = "none";
 
   try {
     const resp = await fetch("/api/generate_story", {
@@ -143,6 +145,22 @@ function renderStoryReview(data) {
 
     container.appendChild(card);
   });
+}
+
+function startStoryAnimation() {
+  if (!LATEST_STORY_DATA) {
+    alert("Please generate a 2-phase story first!");
+    return;
+  }
+  const animSection = document.getElementById("animation_section");
+  animSection.style.display = "flex";
+
+  if (window.PRESENTATION_PLAYER) {
+    window.PRESENTATION_PLAYER.init();
+    window.PRESENTATION_PLAYER.loadPresentation(LATEST_STORY_DATA);
+  }
+
+  animSection.scrollIntoView({ behavior: "smooth" });
 }
 
 function copyStoryJSON() {

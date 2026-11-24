@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Universal Statutory Story Studio · Step 1 Verification</title>
+  <title>Universal Statutory Story &amp; Kinetic Animation Studio</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="/static/css/studio.css">
+  
+  <!-- Vector Shapes & Layout Animation Libraries -->
+  <script src="/static/js/colorful_shapes_library.js"></script>
+  <script src="/static/js/presentation_player.js"></script>
   <script src="/static/js/studio.js"></script>
 </head>
 <body>
@@ -21,9 +25,9 @@
       <div class="header-left">
         <span class="logo-badge">UNIVERSAL LAW STUDIO</span>
         <div>
-          <h1 class="studio-title">Universal Statutory 2-Phase Story Studio</h1>
+          <h1 class="studio-title">Universal Statutory Kinetic Studio</h1>
           <p style="font-size:12.5px; font-weight:600; color:var(--text-muted); margin-top:2px;">
-            Step 1: Paste ANY Legal Provision → Gemini Detects Act &amp; Invents Tailored 2-Phase Story
+            Paste ANY Legal Provision → Generate 2-Phase Story → Preview Kinetic Animation with Shapes &amp; Text
           </p>
         </div>
       </div>
@@ -38,7 +42,7 @@
     <section class="section-panel" id="input_section">
       <div class="panel-header">
         <div class="panel-title">
-          <span>📋</span> Step 1: Paste Any Statutory Provision (Any Act or Law)
+          <span>📋</span> 1. Paste Any Statutory Provision (Any Act or Law)
         </div>
         <span style="font-size:12px; font-weight:700; color:var(--indigo);">
           Zero Presets • 100% Dynamic Legal Analysis
@@ -46,7 +50,7 @@
       </div>
 
       <!-- Textarea for Pasting Any Legal Provision -->
-      <textarea id="provision_input" class="provision-textarea" rows="8" placeholder="Paste ANY statutory provision, section text, rule, circular, or legal doctrine here (Contract Act, Companies Act, Criminal Law, Property Law, Tax, GST, Arbitration, etc.)..."></textarea>
+      <textarea id="provision_input" class="provision-textarea" rows="7" placeholder="Paste ANY statutory provision, section text, rule, circular, or legal doctrine here (Contract Act, Companies Act, Criminal Law, Property Law, Tax, GST, Arbitration, etc.)..."></textarea>
 
       <!-- Input Controls Row -->
       <div class="inputs-row">
@@ -66,7 +70,7 @@
     <section class="section-panel" id="output_section" style="display:none;">
       <div class="panel-header">
         <div class="panel-title">
-          <span>📖</span> Generated 2-Phase Pedagogical Screenplay
+          <span>📖</span> 2. Generated 2-Phase Pedagogical Screenplay
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <button class="btn-action" onclick="copyStoryJSON()">📋 Copy JSON</button>
@@ -86,6 +90,76 @@
       <!-- Scenes Grid (Phase 1 Story vs Phase 2 Statute) -->
       <div id="scenes_container" style="display:flex; flex-direction:column; gap:14px;">
         <!-- Rendered dynamically -->
+      </div>
+
+      <!-- NEXT STEP ACTION BUTTON: CONVERT TO ANIMATION -->
+      <div style="display:flex; justify-content:center; padding:16px 0 6px; border-top:1.5px solid var(--border); margin-top:8px;">
+        <button id="btn_animate" class="btn-generate" onclick="startStoryAnimation()" style="background:linear-gradient(135deg, #059669, #047857); padding:14px 32px; font-size:15px; box-shadow:0 6px 18px rgba(5,150,105,0.35);">
+          <span>🎬</span> Preview Kinetic Animation with Text &amp; Shapes
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 2 OUTPUT: KINETIC ANIMATION CANVAS STAGE -->
+    <section class="section-panel" id="animation_section" style="display:none;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🎬</span> 3. Kinetic Animation Stage (Text &amp; Shapes)
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; background:#F8FAFC; border:1.5px solid var(--border); padding:3px 8px; border-radius:8px;">
+          <span style="font-size:11.5px; font-weight:800; color:#475569; margin-right:2px;">🔠 Text:</span>
+          <button class="font-zoom-btn" onclick="PRESENTATION_PLAYER.setFontScale(1.0, this)" title="Standard Font">100%</button>
+          <button class="font-zoom-btn active" onclick="PRESENTATION_PLAYER.setFontScale(1.15, this)" title="15% Prominent Font">+15%</button>
+          <button class="font-zoom-btn" onclick="PRESENTATION_PLAYER.setFontScale(1.30, this)" title="30% Extra Large Font">+30%</button>
+        </div>
+      </div>
+
+      <!-- Scene Tabs Bar (Scene 1 .. N) -->
+      <div class="scene-tabs-bar" id="anim_scene_tabs">
+        <!-- Rendered dynamically based on generated scenes -->
+      </div>
+
+      <!-- 1000x500 Kinetic Stage Canvas -->
+      <div class="canvas-wrapper">
+        <canvas id="stage_canvas" width="1000" height="500" onclick="PRESENTATION_PLAYER.togglePlay()"></canvas>
+      </div>
+
+      <!-- Scene Narration Bar -->
+      <div class="narration-panel">
+        <div class="narration-meta">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="anim_phase_badge" class="badge-mono" style="background:#D97706; color:#FFFFFF;">📖 PHASE 1: STORY EXPOSITION</span>
+            <span id="anim_tag_label" style="font-size:12px; font-weight:800; color:var(--text);">SCENE 1</span>
+          </div>
+          <div id="anim_story_ref" style="font-size:11.5px; font-weight:800; color:#B45309; display:none;"></div>
+          <span style="font-size:11px; font-weight:700; color:#1E40AF; background:#EFF6FF; padding:3px 8px; border-radius:4px; border:1px solid #BFDBFE;">
+            ✨ Real-Time Kinetic Visual Composition
+          </span>
+        </div>
+        <div class="narration-text" id="anim_narration_text">
+          Loading scene narrative...
+        </div>
+      </div>
+
+      <!-- Transport Controls -->
+      <div class="controls-panel">
+        <div class="scrubber-row">
+          <input type="range" class="timeline-slider" id="anim_timeline_slider" min="0" max="10000" step="50" value="0" oninput="PRESENTATION_PLAYER.seekTo(this.value)">
+          <div class="time-label" id="anim_time_display">00:00.0 / 00:10.0</div>
+        </div>
+        <div class="buttons-row">
+          <div style="display:flex; gap:6px;">
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.prevSlide()">◀ Prev Scene</button>
+            <button class="btn-action primary" id="btn_anim_play_pause" onclick="PRESENTATION_PLAYER.togglePlay()">⏸ Pause</button>
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.nextSlide()">Next Scene ▶</button>
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.seekTo(0)">⏮ Restart Scene</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:12px; font-weight:700; color:var(--emerald);">
+              ● Zero Hardcoded Templates • Live Procedural Animation
+            </span>
+          </div>
+        </div>
       </div>
     </section>
 

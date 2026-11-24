@@ -1,6 +1,6 @@
 // -*- coding: utf-8 -*-
 // static/js/presentation_player.js
-// Kinetic Presentation Player with Audio-Sync, Prominent Typography & Animated Countdowns
+// 100% Dynamic, Provision-Agnostic Kinetic Animation Player for Any Statute
 
 (function() {
   window.PRESENTATION_PLAYER = {};
@@ -9,60 +9,43 @@
   let activeData = null;
   let currentSceneIdx = 0;
   let currentTimeMs = 0;
-  let isPlaying = false;
+  let isPlaying = true;
   let fontScale = 1.15; // Prominent default (+15%)
-  let audioPlayer = null;
-  let autoAdvance = true;
-  let voiceSync = true;
   let lastFrameTime = performance.now();
-
-  function formatRupees(num) {
-    if (typeof num !== "number") return num;
-    return "₹" + num.toLocaleString("en-IN");
-  }
-
-  function getAnimatedAmount(targetNum, elapsedMs, triggerMs = 0, durationMs = 1200) {
-    if (typeof targetNum !== "number" || targetNum <= 0) return targetNum;
-    if (elapsedMs < triggerMs) return "₹0";
-    const progress = Math.min(1.0, Math.max(0, (elapsedMs - triggerMs) / durationMs));
-    // Ease-out cubic formula
-    const easeProgress = 1 - Math.pow(1 - progress, 3);
-    const currentVal = Math.floor(targetNum * easeProgress);
-    return formatRupees(currentVal);
-  }
+  let animationFrameId = null;
 
   function initPlayer() {
     canvas = document.getElementById("stage_canvas");
     if (!canvas) return;
     ctx = canvas.getContext("2d");
-    audioPlayer = document.getElementById("voice_audio_player");
-
-    if (audioPlayer) {
-      audioPlayer.addEventListener("timeupdate", onAudioTimeUpdate);
-      audioPlayer.addEventListener("ended", onAudioEnded);
-    }
-
-    requestAnimationFrame(renderLoop);
   }
 
   function loadPresentation(data) {
     activeData = data;
     currentSceneIdx = 0;
     currentTimeMs = 0;
+    isPlaying = true;
+    updatePlayBtnState();
     renderTabs();
     switchScene(0);
+
+    if (!animationFrameId) {
+      lastFrameTime = performance.now();
+      animationFrameId = requestAnimationFrame(renderLoop);
+    }
   }
 
   function renderTabs() {
-    const tabsContainer = document.getElementById("scene_tabs");
+    const tabsContainer = document.getElementById("anim_scene_tabs");
     if (!tabsContainer || !activeData || !activeData.scenes) return;
 
     tabsContainer.innerHTML = "";
     activeData.scenes.forEach((sc, idx) => {
       const btn = document.createElement("button");
-      btn.className = `scene-tab-btn ${idx === currentSceneIdx ? "active" : ""} ${sc.screenplay_phase && sc.screenplay_phase.includes("STORY") ? "phase-story" : "phase-statute"}`;
-      const prefix = sc.screenplay_phase && sc.screenplay_phase.includes("STORY") ? "📖" : "⚖️";
-      btn.innerHTML = `${prefix} Slide ${idx + 1}: ${sc.tab_title || sc.tag || `Scene ${idx+1}`}`;
+      const isPhase1 = sc.screenplay_phase && sc.screenplay_phase.includes("PHASE 1");
+      btn.className = `scene-tab-btn ${idx === currentSceneIdx ? "active" : ""} ${isPhase1 ? "phase-story" : "phase-statute"}`;
+      const prefix = isPhase1 ? "📖" : "⚖️";
+      btn.innerHTML = `${prefix} Scene ${idx + 1}: ${sc.tab_title || `Scene ${idx+1}`}`;
       btn.onclick = () => switchScene(idx);
       tabsContainer.appendChild(btn);
     });
@@ -74,23 +57,23 @@
     currentTimeMs = 0;
 
     // Update Tab active classes
-    const tabs = document.querySelectorAll(".scene-tab-btn");
+    const tabs = document.querySelectorAll("#anim_scene_tabs .scene-tab-btn");
     tabs.forEach((t, i) => t.classList.toggle("active", i === idx));
 
     const sc = activeData.scenes[idx];
+    const isPhase1 = sc.screenplay_phase && sc.screenplay_phase.includes("PHASE 1");
 
     // Narration Meta
-    const phaseBadge = document.getElementById("scene_phase_badge");
+    const phaseBadge = document.getElementById("anim_phase_badge");
     if (phaseBadge) {
-      const isStory = sc.screenplay_phase && sc.screenplay_phase.includes("STORY");
-      phaseBadge.textContent = isStory ? "📖 PHASE 1: STORY EXPOSITION" : "⚖️ PHASE 2: STATUTORY BREAKDOWN";
-      phaseBadge.style.background = isStory ? "#D97706" : "#059669";
+      phaseBadge.textContent = isPhase1 ? "📖 PHASE 1: STORY EXPOSITION" : "⚖️ PHASE 2: STATUTORY BREAKDOWN";
+      phaseBadge.style.background = isPhase1 ? "#D97706" : "#059669";
     }
 
-    const tagLabel = document.getElementById("scene_tag_label");
+    const tagLabel = document.getElementById("anim_tag_label");
     if (tagLabel) tagLabel.textContent = (sc.tag || `SCENE ${idx+1}`).toUpperCase();
 
-    const storyRef = document.getElementById("scene_story_ref");
+    const storyRef = document.getElementById("anim_story_ref");
     if (storyRef) {
       if (sc.story_point_ref) {
         storyRef.style.display = "block";
@@ -100,75 +83,25 @@
       }
     }
 
-    // Audio setup
-    if (audioPlayer && sc.audio_url) {
-      audioPlayer.src = sc.audio_url;
-      audioPlayer.currentTime = 0;
-      if (isPlaying) {
-        audioPlayer.play().catch(e => console.warn("Audio autoplay:", e));
-      }
+    const narrationEl = document.getElementById("anim_narration_text");
+    if (narrationEl) {
+      narrationEl.textContent = sc.dialogue || "";
     }
 
-    // Slider setup
-    const slider = document.getElementById("timeline_slider");
+    const slider = document.getElementById("anim_timeline_slider");
     if (slider) {
-      slider.max = sc.duration_ms || 12000;
+      slider.max = sc.duration_ms || 10000;
       slider.value = 0;
     }
-
-    updateNarrationText(sc, 0);
-  }
-
-  function onAudioTimeUpdate() {
-    if (voiceSync && audioPlayer && !audioPlayer.paused) {
-      currentTimeMs = audioPlayer.currentTime * 1000;
-      const slider = document.getElementById("timeline_slider");
-      if (slider) slider.value = currentTimeMs;
-    }
-  }
-
-  function onAudioEnded() {
-    if (autoAdvance && activeData && currentSceneIdx < activeData.scenes.length - 1) {
-      setTimeout(() => switchScene(currentSceneIdx + 1), 600);
-    } else {
-      isPlaying = false;
-      updatePlayBtnState();
-    }
-  }
-
-  function updateNarrationText(sc, timeMs) {
-    const el = document.getElementById("narration_text");
-    if (!el) return;
-
-    if (!sc.sentences || sc.sentences.length === 0) {
-      el.textContent = sc.dialogue || "";
-      return;
-    }
-
-    // Real-Time Karaoke Highlight
-    let html = "";
-    sc.sentences.forEach(s => {
-      const isCurrent = timeMs >= s.start_ms && timeMs <= s.end_ms;
-      if (isCurrent) {
-        html += `<span class="karaoke-active">${s.text}</span> `;
-      } else {
-        html += `<span>${s.text}</span> `;
-      }
-    });
-    el.innerHTML = html;
   }
 
   function togglePlay() {
     isPlaying = !isPlaying;
-    if (audioPlayer) {
-      if (isPlaying) audioPlayer.play().catch(e => console.warn(e));
-      else audioPlayer.pause();
-    }
     updatePlayBtnState();
   }
 
   function updatePlayBtnState() {
-    const btn = document.getElementById("btn_play_pause");
+    const btn = document.getElementById("btn_anim_play_pause");
     if (btn) btn.innerHTML = isPlaying ? "⏸ Pause" : "▶ Play Animation";
   }
 
@@ -179,37 +112,52 @@
   }
 
   // ==========================================
-  // RENDER LOOP & CANVAS DRAWING
+  // SMART DYNAMIC ICON MATCHER (UNIVERSAL)
+  // ==========================================
+  function getSmartIcon(text) {
+    if (!text) return "file-text";
+    const s = text.toLowerCase();
+    if (s.includes("user") || s.includes("person") || s.includes("buyer") || s.includes("seller") || s.includes("party") || s.includes("director") || s.includes("promoter") || s.includes("architect") || s.includes("doctor")) return "user";
+    if (s.includes("company") || s.includes("corporate") || s.includes("firm") || s.includes("hospital") || s.includes("factory") || s.includes("enterprise") || s.includes("business")) return "building-2";
+    if (s.includes("contract") || s.includes("agreement") || s.includes("deed") || s.includes("clause") || s.includes("terms") || s.includes("policy")) return "file-text";
+    if (s.includes("money") || s.includes("price") || s.includes("consideration") || s.includes("amount") || s.includes("payment") || s.includes("profit") || s.includes("fee") || s.includes("crore") || s.includes("lakh")) return "coins";
+    if (s.includes("loss") || s.includes("breach") || s.includes("damage") || s.includes("remote") || s.includes("default") || s.includes("dispute") || s.includes("injury")) return "alert-triangle";
+    if (s.includes("court") || s.includes("judge") || s.includes("law") || s.includes("section") || s.includes("order") || s.includes("precedent") || s.includes("verdict") || s.includes("judgement")) return "gavel";
+    if (s.includes("shield") || s.includes("safe") || s.includes("exemption") || s.includes("remedy") || s.includes("defence") || s.includes("exception")) return "shield-check";
+    if (s.includes("time") || s.includes("date") || s.includes("month") || s.includes("year") || s.includes("deadline") || s.includes("delay")) return "clock";
+    if (s.includes("goods") || s.includes("delivery") || s.includes("shipment") || s.includes("transport") || s.includes("fleet")) return "truck";
+    if (s.includes("land") || s.includes("property") || s.includes("house") || s.includes("building") || s.includes("flat")) return "residential_house";
+    if (s.includes("check") || s.includes("valid") || s.includes("condition") || s.includes("approved")) return "badge-check";
+    return "scale";
+  }
+
+  // ==========================================
+  // ANIMATION LOOP & CANVAS RENDERER
   // ==========================================
   function renderLoop(now) {
     const dt = now - lastFrameTime;
     lastFrameTime = now;
 
-    if (isPlaying && (!audioPlayer || audioPlayer.paused)) {
+    if (isPlaying && activeData && activeData.scenes) {
       currentTimeMs += dt;
-      const sc = activeData?.scenes?.[currentSceneIdx];
-      const maxMs = sc?.duration_ms || 12000;
+      const sc = activeData.scenes[currentSceneIdx];
+      const maxMs = sc?.duration_ms || 10000;
       if (currentTimeMs >= maxMs) {
-        if (autoAdvance && activeData && currentSceneIdx < activeData.scenes.length - 1) {
-          switchScene(currentSceneIdx + 1);
-        } else {
-          isPlaying = false;
-          updatePlayBtnState();
-        }
+        currentTimeMs = maxMs; // Hold at end of scene
       }
-      const slider = document.getElementById("timeline_slider");
+      const slider = document.getElementById("anim_timeline_slider");
       if (slider) slider.value = currentTimeMs;
     }
 
     drawScene();
-    requestAnimationFrame(renderLoop);
+    animationFrameId = requestAnimationFrame(renderLoop);
   }
 
   function drawScene() {
     if (!ctx) return;
     ctx.clearRect(0, 0, 1000, 500);
 
-    // Subtle background grid
+    // Background & subtle grid
     ctx.fillStyle = "#FFFFFF";
     ctx.fillRect(0, 0, 1000, 500);
     ctx.strokeStyle = "#F1F5F9";
@@ -227,10 +175,10 @@
     }
 
     const sc = activeData.scenes[currentSceneIdx];
-    updateNarrationText(sc, currentTimeMs);
+    const isPhase1 = sc.screenplay_phase && sc.screenplay_phase.includes("PHASE 1");
 
     // Update time indicator
-    const timeDisplay = document.getElementById("time_display");
+    const timeDisplay = document.getElementById("anim_time_display");
     if (timeDisplay) {
       const curSec = (currentTimeMs / 1000).toFixed(1);
       const totalSec = ((sc.duration_ms || 10000) / 1000).toFixed(1);
@@ -238,342 +186,347 @@
     }
 
     // Top Header Banner
-    drawSceneHeader(sc);
+    drawTopHeaderBanner(sc, isPhase1);
 
-    // Draw Elements based on Archetype
-    const archetype = sc.layout_archetype || "split_screen";
-    if (archetype === "waterfall_ledger" || archetype === "hero_ledger") {
-      drawWaterfallLadder(sc);
-    } else if (archetype === "balance_scale") {
-      drawBalanceScale(sc);
+    // Render Dynamic Content
+    if (isPhase1) {
+      if (currentSceneIdx === 0) {
+        drawPhase1Scene1(sc);
+      } else {
+        drawPhase1Scene2(sc);
+      }
     } else {
-      drawGenericSceneElements(sc);
+      drawPhase2StatutoryBreakdown(sc);
     }
   }
 
-  function drawSceneHeader(sc) {
+  function drawTopHeaderBanner(sc, isPhase1) {
     ctx.save();
-    // Section Code Badge
-    ctx.fillStyle = "#EEF2FF";
-    ctx.strokeStyle = "#C7D2FE";
+    // Act & Section Badge
+    const actBadgeText = (activeData.act_name || "STATUTE").toUpperCase();
+    const secBadgeText = (activeData.section_code || "PROVISION").toUpperCase();
+    
+    // Act Pill
+    ctx.fillStyle = isPhase1 ? "#FFFBEB" : "#ECFDF5";
+    ctx.strokeStyle = isPhase1 ? "#FDE68A" : "#A7F3D0";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(50, 24, 150, 32, 6);
+    ctx.roundRect(50, 20, 320, 32, 6);
     ctx.fill(); ctx.stroke();
 
-    ctx.fillStyle = "#4F46E5";
-    ctx.font = `bold ${Math.round(11.5 * fontScale)}px JetBrains Mono, monospace`;
-    ctx.fillText(activeData.section_code || "INCOME TAX ACT", 62, 45);
+    ctx.fillStyle = isPhase1 ? "#B45309" : "#047857";
+    ctx.font = `bold ${Math.round(11 * fontScale)}px JetBrains Mono, monospace`;
+    ctx.fillText(`🏛️ ${actBadgeText} · ${secBadgeText}`, 62, 41);
 
-    // Slide Title
+    // Scene Title
     ctx.fillStyle = "#0F172A";
     ctx.font = `800 ${Math.round(16 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-    ctx.fillText(sc.tab_title || sc.tag || "Statutory Analysis", 215, 46);
+    ctx.textAlign = "left";
+    ctx.fillText(sc.tab_title || sc.tag || "Scene Analysis", 390, 42);
     ctx.restore();
   }
 
-  function drawGenericSceneElements(sc) {
-    const elements = sc.elements || [];
-    elements.forEach(el => {
-      const startMs = el.start_ms || 0;
-      if (currentTimeMs < startMs) return;
+  // ==========================================
+  // PHASE 1 SCENE 1: CHARACTERS & INITIAL DEAL
+  // ==========================================
+  function drawPhase1Scene1(sc) {
+    const chars = sc.characters_or_elements || ["Party A", "Party B", "Agreement"];
+    const char1 = chars[0] || "Party A";
+    const char2 = chars[1] || "Party B";
+    const deal = chars[2] || "Agreement / Transaction";
 
-      const progress = Math.min(1.0, (currentTimeMs - startMs) / 500);
+    const pts = sc.key_points || ["Initial background", "Agreed contractual terms"];
 
-      if (el.type === "asset_node" || el.type === "card") {
-        drawNodeCard(el, progress);
-      } else if (el.type === "flow_pipe") {
-        drawFlowPipe(el, progress);
-      } else if (el.type === "box") {
-        drawNoteBox(el, progress);
+    // Card 1: Left Party
+    const p1 = Math.min(1.0, Math.max(0, (currentTimeMs - 300) / 600));
+    if (p1 > 0) {
+      ctx.save();
+      ctx.globalAlpha = p1;
+      const x1 = 80; const y1 = 90; const w1 = 340; const h1 = 230;
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.strokeStyle = "#CBD5E1";
+      ctx.lineWidth = 2;
+      ctx.shadowColor = "rgba(15,23,42,0.08)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+      ctx.beginPath(); ctx.roundRect(x1, y1, w1, h1, 12); ctx.fill(); ctx.stroke();
+      ctx.shadowColor = "transparent";
+
+      // Icon Badge
+      const icon1 = getSmartIcon(char1);
+      if (window.drawColorfulBadgeShape) {
+        window.drawColorfulBadgeShape(ctx, icon1, x1 + w1/2, y1 + 52, 28, "indigo", "circle");
+      }
+
+      ctx.fillStyle = "#0F172A";
+      ctx.font = `800 ${Math.round(15 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(char1, x1 + w1/2, y1 + 115);
+
+      ctx.fillStyle = "#475569";
+      ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillText(pts[0] || "Initial Contracting Party", x1 + w1/2, y1 + 145);
+
+      ctx.restore();
+    }
+
+    // Card 2: Right Party
+    const p2 = Math.min(1.0, Math.max(0, (currentTimeMs - 1200) / 600));
+    if (p2 > 0) {
+      ctx.save();
+      ctx.globalAlpha = p2;
+      const x2 = 580; const y2 = 90; const w2 = 340; const h2 = 230;
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.strokeStyle = "#CBD5E1";
+      ctx.lineWidth = 2;
+      ctx.shadowColor = "rgba(15,23,42,0.08)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+      ctx.beginPath(); ctx.roundRect(x2, y2, w2, h2, 12); ctx.fill(); ctx.stroke();
+      ctx.shadowColor = "transparent";
+
+      const icon2 = getSmartIcon(char2);
+      if (window.drawColorfulBadgeShape) {
+        window.drawColorfulBadgeShape(ctx, icon2, x2 + w2/2, y2 + 52, 28, "sky", "circle");
+      }
+
+      ctx.fillStyle = "#0F172A";
+      ctx.font = `800 ${Math.round(15 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(char2, x2 + w2/2, y2 + 115);
+
+      ctx.fillStyle = "#475569";
+      ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillText(pts[1] || "Counterparty in Transaction", x2 + w2/2, y2 + 145);
+
+      ctx.restore();
+    }
+
+    // Connecting Arrow / Pipe
+    const pPipe = Math.min(1.0, Math.max(0, (currentTimeMs - 2200) / 700));
+    if (pPipe > 0) {
+      ctx.save();
+      ctx.strokeStyle = "#4F46E5";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 5]);
+
+      const startX = 420;
+      const targetX = 580;
+      const curX = startX + (targetX - startX) * pPipe;
+
+      ctx.beginPath();
+      ctx.moveTo(startX, 205);
+      ctx.lineTo(curX, 205);
+      ctx.stroke();
+
+      if (pPipe > 0.4) {
+        ctx.fillStyle = "#4F46E5";
+        ctx.font = `800 ${Math.round(11 * fontScale)}px JetBrains Mono, monospace`;
+        ctx.textAlign = "center";
+        ctx.fillText(deal.toUpperCase(), 500, 190);
+      }
+      ctx.restore();
+    }
+
+    // Bottom Story Note Box
+    const pNote = Math.min(1.0, Math.max(0, (currentTimeMs - 3400) / 500));
+    if (pNote > 0) {
+      drawBottomStoryNote(pNote, sc.tag || "THE FACTUAL GENESIS", sc.dialogue);
+    }
+  }
+
+  // ==========================================
+  // PHASE 1 SCENE 2: THE TURNING POINT / BREACH
+  // ==========================================
+  function drawPhase1Scene2(sc) {
+    const chars = sc.characters_or_elements || ["Obligation", "Breach Event", "Resulting Loss"];
+    const pts = sc.key_points || ["Contractual expectations", "The turning event", "Dispute arises"];
+
+    // 3 Cards: Left Obligation -> Center Breach Event -> Right Resulting Loss
+    const items = [
+      { label: chars[0] || "1. Original Terms", text: pts[0] || "Agreed conditions", theme: "sky", startMs: 300, x: 70 },
+      { label: chars[1] || "2. The Event / Breach", text: pts[1] || "Triggering dispute", theme: "crimson", startMs: 1600, x: 375 },
+      { label: chars[2] || "3. Resulting Damage", text: pts[2] || "Legal consequence", theme: "amber", startMs: 3000, x: 680 }
+    ];
+
+    items.forEach(it => {
+      const p = Math.min(1.0, Math.max(0, (currentTimeMs - it.startMs) / 600));
+      if (p > 0) {
+        ctx.save();
+        ctx.globalAlpha = p;
+        const w = 250; const h = 230; const y = 95;
+
+        ctx.fillStyle = "#FFFFFF";
+        ctx.strokeStyle = it.theme === "crimson" ? "#FECACA" : "#CBD5E1";
+        ctx.lineWidth = it.theme === "crimson" ? 2.5 : 1.5;
+        ctx.shadowColor = "rgba(15,23,42,0.08)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+        ctx.beginPath(); ctx.roundRect(it.x, y, w, h, 12); ctx.fill(); ctx.stroke();
+        ctx.shadowColor = "transparent";
+
+        const icon = getSmartIcon(it.label);
+        if (window.drawColorfulBadgeShape) {
+          window.drawColorfulBadgeShape(ctx, icon, it.x + w/2, y + 52, 28, it.theme, "circle");
+        }
+
+        ctx.fillStyle = it.theme === "crimson" ? "#991B1B" : "#0F172A";
+        ctx.font = `800 ${Math.round(14 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(it.label, it.x + w/2, y + 115);
+
+        ctx.fillStyle = "#475569";
+        ctx.font = `600 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+        wrapCanvasText(ctx, it.text, it.x + w/2, y + 145, w - 24, 18);
+
+        ctx.restore();
       }
     });
+
+    const pNote = Math.min(1.0, Math.max(0, (currentTimeMs - 4200) / 500));
+    if (pNote > 0) {
+      drawBottomStoryNote(pNote, sc.tag || "TURNING POINT & STATUTORY DISPUTE", sc.dialogue);
+    }
   }
 
-  function drawNodeCard(el, progress) {
-    ctx.save();
-    ctx.globalAlpha = progress;
+  // ==========================================
+  // PHASE 2: STATUTORY DECONSTRUCTION
+  // ==========================================
+  function drawPhase2StatutoryBreakdown(sc) {
+    // Reference Banner: Story Point Ref
+    if (sc.story_point_ref) {
+      ctx.save();
+      ctx.fillStyle = "#FFFBEB";
+      ctx.strokeStyle = "#FDE68A";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(70, 75, 860, 36, 6);
+      ctx.fill(); ctx.stroke();
 
-    const x = el.x;
-    const y = el.y;
-    const w = el.w;
-    const h = el.h;
-
-    // Card background
-    ctx.fillStyle = "#FFFFFF";
-    ctx.strokeStyle = "#CBD5E1";
-    ctx.lineWidth = 2;
-    ctx.shadowColor = "rgba(15, 23, 42, 0.08)";
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetY = 4;
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 12);
-    ctx.fill(); ctx.stroke();
-
-    ctx.shadowColor = "transparent";
-
-    // Icon Badge (Prominent)
-    const iconName = el.icon || "file-text";
-    const badgeR = 30;
-    const badgeX = x + w / 2;
-    const badgeY = y + 54;
-    if (window.drawColorfulBadgeShape) {
-      window.drawColorfulBadgeShape(ctx, iconName, badgeX, badgeY, badgeR, "indigo", "circle");
+      ctx.fillStyle = "#B45309";
+      ctx.font = `800 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText(`🎯 ${sc.story_point_ref}`, 85, 98);
+      ctx.restore();
     }
 
-    // Label
-    ctx.fillStyle = "#0F172A";
-    ctx.font = `800 ${Math.round(15 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText(el.label || el.title || "", badgeX, y + 115);
+    const pts = sc.key_points || ["Statutory condition 1", "Statutory condition 2"];
+    const count = Math.min(3, Math.max(2, pts.length));
+    const gap = 20;
+    const totalW = 860;
+    const cardW = Math.floor((totalW - (count - 1) * gap) / count);
+    const startY = 125;
+    const cardH = 210;
 
-    // Subtitle
-    ctx.fillStyle = "#64748B";
-    ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-    ctx.fillText(el.subtitle || el.text || "", badgeX, y + 140);
+    pts.slice(0, count).forEach((pt, idx) => {
+      const stepStartMs = 400 + idx * 1200;
+      const p = Math.min(1.0, Math.max(0, (currentTimeMs - stepStartMs) / 500));
+      if (p <= 0) return;
 
-    // Prominent Full Amount with Animated Countdown
-    if (el.amount_val) {
-      const animAmount = getAnimatedAmount(el.amount_val, currentTimeMs, el.countdown_trigger_ms || el.start_ms);
-      ctx.fillStyle = "#059669";
-      ctx.font = `800 ${Math.round(16 * fontScale)}px JetBrains Mono, monospace`;
-      ctx.fillText(animAmount, badgeX, y + 180);
-    }
+      const cardX = 70 + idx * (cardW + gap);
 
-    ctx.restore();
-  }
+      ctx.save();
+      ctx.globalAlpha = p;
 
-  function drawFlowPipe(el, progress) {
-    ctx.save();
-    ctx.strokeStyle = "#4F46E5";
-    ctx.lineWidth = 3.5;
-    ctx.setLineDash([8, 5]);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.strokeStyle = idx === 0 ? "#A7F3D0" : "#CBD5E1";
+      ctx.lineWidth = idx === 0 ? 2.5 : 1.5;
+      ctx.shadowColor = "rgba(15,23,42,0.06)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+      ctx.beginPath(); ctx.roundRect(cardX, startY, cardW, cardH, 10); ctx.fill(); ctx.stroke();
+      ctx.shadowColor = "transparent";
 
-    const curX2 = el.x1 + (el.x2 - el.x1) * progress;
-    const curY2 = el.y1 + (el.y2 - el.y1) * progress;
+      const icon = getSmartIcon(pt);
+      const theme = idx === 0 ? "emerald" : (idx === 1 ? "indigo" : "amber");
+      if (window.drawColorfulBadgeShape) {
+        window.drawColorfulBadgeShape(ctx, icon, cardX + cardW/2, startY + 48, 26, theme, "circle");
+      }
 
-    ctx.beginPath();
-    ctx.moveTo(el.x1, el.y1);
-    ctx.lineTo(curX2, curY2);
-    ctx.stroke();
-
-    if (progress > 0.5 && el.label) {
-      ctx.fillStyle = "#4F46E5";
-      ctx.font = `800 ${Math.round(11 * fontScale)}px JetBrains Mono, monospace`;
+      ctx.fillStyle = "#0F172A";
+      ctx.font = `800 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(el.label, (el.x1 + el.x2) / 2, el.y1 - 10);
+      ctx.fillText(`RULE ${idx + 1}`, cardX + cardW/2, startY + 105);
+
+      ctx.fillStyle = "#334155";
+      ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      wrapCanvasText(ctx, pt, cardX + cardW/2, startY + 135, cardW - 20, 18);
+
+      ctx.restore();
+    });
+
+    // Bottom Statutory Takeaway Bar
+    const pTakeaway = Math.min(1.0, Math.max(0, (currentTimeMs - 3800) / 500));
+    if (pTakeaway > 0) {
+      ctx.save();
+      ctx.globalAlpha = pTakeaway;
+      const y = 355;
+      ctx.fillStyle = "#ECFDF5";
+      ctx.strokeStyle = "#059669";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(70, y, 860, 80, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#047857";
+      ctx.font = `800 ${Math.round(12.5 * fontScale)}px JetBrains Mono, monospace`;
+      ctx.textAlign = "left";
+      ctx.fillText("⚖️ STATUTORY APPLICATION & LEGAL REMEDY:", 90, y + 28);
+
+      ctx.fillStyle = "#0F172A";
+      ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      const charTags = (sc.characters_or_elements || []).join("  •  ");
+      ctx.fillText(charTags || (sc.key_points ? sc.key_points[0] : ""), 90, y + 54);
+      ctx.restore();
     }
-    ctx.restore();
   }
 
-  function drawNoteBox(el, progress) {
+  function drawBottomStoryNote(progress, title, dialogue) {
     ctx.save();
     ctx.globalAlpha = progress;
+    const x = 70; const y = 345; const w = 860; const h = 95;
+
     ctx.fillStyle = "#F8FAFC";
     ctx.strokeStyle = "#E2E8F0";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(el.x, el.y, el.w, el.h, 8);
+    ctx.roundRect(x, y, w, h, 8);
     ctx.fill(); ctx.stroke();
 
     ctx.fillStyle = "#0F172A";
     ctx.font = `800 ${Math.round(13 * fontScale)}px Plus Jakarta Sans, sans-serif`;
     ctx.textAlign = "left";
-    ctx.fillText(el.title || "", el.x + 16, el.y + 30);
+    ctx.fillText(title, x + 18, y + 28);
 
     ctx.fillStyle = "#475569";
     ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-    ctx.fillText(el.subtitle || "", el.x + 16, el.y + 54);
+    const snippet = dialogue ? dialogue.split(".")[0] + "." : "";
+    wrapCanvasText(ctx, snippet, x + 18, y + 54, w - 36, 18, "left");
+
     ctx.restore();
   }
 
-  // ==========================================
-  // WATERFALL LADDER (Deductions with Countdown)
-  // ==========================================
-  function drawWaterfallLadder(sc) {
-    const rows = [
-      { label: "Full Value of Consideration (Sec 50C Deemed SDV)", amount: 12500000, isDeduction: false },
-      { label: "Less: Transfer & Stamp Duty Expenses", amount: 500000, isDeduction: true },
-      { label: "Net Consideration", amount: 12000000, isDeduction: false },
-      { label: "Less: Indexed Cost of Acquisition (COA)", amount: 3000000, isDeduction: true },
-      { label: "Gross Long-Term Capital Gains (LTCG)", amount: 9000000, isDeduction: false },
-      { label: "Less: Section 54EC REC Capital Gain Bonds", amount: 5000000, isDeduction: true },
-      { label: "Net Taxable Long-Term Capital Gains", amount: 4000000, isHero: true }
-    ];
+  function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, align = "center") {
+    if (!text) return;
+    const words = text.split(" ");
+    let line = "";
+    let curY = y;
+    ctx.textAlign = align;
 
-    const count = rows.length;
-    const startY = 80;
-    const rowH = 48;
-    const w = 780;
-    const x = 110;
-    const stepDurationMs = 1400;
-
-    rows.forEach((r, idx) => {
-      const stepStartMs = 400 + idx * stepDurationMs;
-      if (currentTimeMs < stepStartMs) return;
-
-      const progress = Math.min(1.0, (currentTimeMs - stepStartMs) / 450);
-      const y = startY + idx * (rowH + 6);
-
-      ctx.save();
-      ctx.globalAlpha = progress;
-
-      // Card row
-      if (r.isHero) {
-        ctx.fillStyle = "#ECFDF5";
-        ctx.strokeStyle = "#059669";
-        ctx.lineWidth = 2.5;
-      } else if (r.isDeduction) {
-        ctx.fillStyle = "#FEF2F2";
-        ctx.strokeStyle = "#FECACA";
-        ctx.lineWidth = 1.5;
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + " ";
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && n > 0) {
+        ctx.fillText(line, x, curY);
+        line = words[n] + " ";
+        curY += lineHeight;
+        if (curY > y + lineHeight * 3) break; // cap to 4 lines
       } else {
-        ctx.fillStyle = "#FFFFFF";
-        ctx.strokeStyle = "#E2E8F0";
-        ctx.lineWidth = 1.5;
+        line = testLine;
       }
-
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, rowH, 8);
-      ctx.fill(); ctx.stroke();
-
-      // Label (Prominent)
-      ctx.fillStyle = r.isHero ? "#065F46" : "#0F172A";
-      ctx.font = `700 ${Math.round(13.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-      ctx.textAlign = "left";
-      ctx.fillText((r.isDeduction ? "(-)  " : "") + r.label, x + 20, y + 29);
-
-      // Amount with Animated Countdown
-      const animVal = getAnimatedAmount(r.amount, currentTimeMs, stepStartMs + 100, 1000);
-      ctx.fillStyle = r.isHero ? "#047857" : (r.isDeduction ? "#DC2626" : "#0F172A");
-      ctx.font = `800 ${Math.round(15.5 * fontScale)}px JetBrains Mono, monospace`;
-      ctx.textAlign = "right";
-      ctx.fillText(animVal, x + w - 24, y + 29);
-
-      ctx.restore();
-    });
-  }
-
-  // ==========================================
-  // BALANCE SCALE (Safe Harbor 110% Comparison)
-  // ==========================================
-  function drawBalanceScale(sc) {
-    const cx = 500;
-    const cy = 250;
-
-    // Animate scale tilt after 2.5s
-    const tiltMs = 2500;
-    const tiltProgress = Math.min(1.0, Math.max(0, (currentTimeMs - tiltMs) / 1200));
-    const angle = tiltProgress * 0.16; // tilt down on SDV side
-
-    ctx.save();
-    // Central Pillar
-    ctx.strokeStyle = "#334155";
-    ctx.lineWidth = 7;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - 80);
-    ctx.lineTo(cx, cy + 120);
-    ctx.stroke();
-
-    // Fulcrum base
-    ctx.fillStyle = "#1E293B";
-    ctx.beginPath();
-    ctx.moveTo(cx - 50, cy + 130);
-    ctx.lineTo(cx + 50, cy + 130);
-    ctx.lineTo(cx, cy + 100);
-    ctx.closePath();
-    ctx.fill();
-
-    // Tilting Beam
-    ctx.translate(cx, cy - 80);
-    ctx.rotate(angle);
-    ctx.strokeStyle = "#475569";
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(-220, 0);
-    ctx.lineTo(220, 0);
-    ctx.stroke();
-
-    // Left Pan (Agreed Value: ₹1,00,00,000)
-    ctx.save();
-    ctx.translate(-220, 0);
-    ctx.rotate(-angle);
-    ctx.strokeStyle = "#94A3B8";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, 0); ctx.lineTo(-45, 90);
-    ctx.moveTo(0, 0); ctx.lineTo(45, 90);
-    ctx.stroke();
-
-    ctx.fillStyle = "#EEF2FF";
-    ctx.strokeStyle = "#4F46E5";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(-90, 90, 180, 75, 10);
-    ctx.fill(); ctx.stroke();
-
-    ctx.fillStyle = "#1E1B4B";
-    ctx.font = `800 ${Math.round(12.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("AGREED VALUE", 0, 115);
-    ctx.fillStyle = "#4F46E5";
-    ctx.font = `800 ${Math.round(15 * fontScale)}px JetBrains Mono, monospace`;
-    ctx.fillText("₹1,00,00,000", 0, 142);
-    ctx.restore();
-
-    // Right Pan (Stamp Duty Value: ₹1,25,00,000)
-    ctx.save();
-    ctx.translate(220, 0);
-    ctx.rotate(-angle);
-    ctx.strokeStyle = "#94A3B8";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, 0); ctx.lineTo(-45, 90);
-    ctx.moveTo(0, 0); ctx.lineTo(45, 90);
-    ctx.stroke();
-
-    ctx.fillStyle = "#FEF2F2";
-    ctx.strokeStyle = "#DC2626";
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.roundRect(-90, 90, 180, 75, 10);
-    ctx.fill(); ctx.stroke();
-
-    ctx.fillStyle = "#7F1D1D";
-    ctx.font = `800 ${Math.round(12.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("STAMP DUTY (SDV)", 0, 115);
-    ctx.fillStyle = "#DC2626";
-    ctx.font = `800 ${Math.round(15 * fontScale)}px JetBrains Mono, monospace`;
-    ctx.fillText("₹1,25,00,000", 0, 142);
-    ctx.restore();
-
-    ctx.restore();
-
-    // Safe Harbor Breach Indicator (Pops up when scale tilts)
-    if (tiltProgress > 0.4) {
-      ctx.save();
-      ctx.globalAlpha = tiltProgress;
-      ctx.fillStyle = "#DC2626";
-      ctx.strokeStyle = "#FFFFFF";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(380, 70, 240, 42, 8);
-      ctx.fill(); ctx.stroke();
-
-      ctx.fillStyle = "#FFFFFF";
-      ctx.font = `800 ${Math.round(12 * fontScale)}px JetBrains Mono, monospace`;
-      ctx.textAlign = "center";
-      ctx.fillText("⚠️ 110% SAFE HARBOR BREACHED", 500, 96);
-      ctx.restore();
     }
+    ctx.fillText(line, x, curY);
   }
 
   function drawPlaceholder() {
     ctx.fillStyle = "#94A3B8";
     ctx.font = `700 16px Plus Jakarta Sans, sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText("Paste a statutory provision above and click 'Generate Presentation'", 500, 240);
+    ctx.fillText("Click 'Preview Kinetic Animation with Text & Shapes' above to start", 500, 240);
   }
 
   // Public API
@@ -586,8 +539,7 @@
     prevSlide: () => switchScene(Math.max(0, currentSceneIdx - 1)),
     nextSlide: () => activeData?.scenes && switchScene(Math.min(activeData.scenes.length - 1, currentSceneIdx + 1)),
     seekTo: (ms) => {
-      currentTimeMs = ms;
-      if (audioPlayer) audioPlayer.currentTime = ms / 1000;
+      currentTimeMs = Number(ms);
     }
   };
 
