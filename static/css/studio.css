@@ -335,9 +335,9 @@ body {
 }
 #stage_canvas {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1080px;
   height: auto;
-  aspect-ratio: 1000 / 500;
+  aspect-ratio: 16 / 9;
   background: #FFFFFF;
   display: block;
   cursor: pointer;
