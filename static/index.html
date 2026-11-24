@@ -151,15 +151,20 @@
           <div class="time-label" id="anim_time_display">00:00.0 / 00:10.0</div>
         </div>
         <div class="buttons-row">
-          <div style="display:flex; gap:6px;">
-            <button class="btn-action" onclick="PRESENTATION_PLAYER.prevSlide()">◀ Prev Scene</button>
-            <button class="btn-action primary" id="btn_anim_play_pause" onclick="PRESENTATION_PLAYER.togglePlay()">⏸ Pause</button>
-            <button class="btn-action" onclick="PRESENTATION_PLAYER.nextSlide()">Next Scene ▶</button>
-            <button class="btn-action" onclick="PRESENTATION_PLAYER.seekTo(0)">⏮ Restart Scene</button>
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.prevSlide()" title="Previous Slide (Arrow Left)">◀ Prev</button>
+            <button class="btn-action primary" id="btn_anim_play_pause" onclick="PRESENTATION_PLAYER.togglePlay()" title="Play / Pause (Spacebar)">⏸ Pause</button>
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.nextSlide()" title="Next Slide (Arrow Right)">Next ▶</button>
+            <button class="btn-action" onclick="PRESENTATION_PLAYER.seekTo(0)" title="Restart Current Slide (Key R)">⏮ Restart</button>
+            <button class="btn-action" id="btn_voice_toggle" onclick="PRESENTATION_PLAYER.toggleVoice()" style="border-color:#10B981; color:#059669; font-weight:800;" title="Toggle Spoken Teacher Explanation">🔊 Voice: ON</button>
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:12px; font-weight:700; color:var(--emerald);">
-              ● Zero Hardcoded Templates • Live Procedural Animation
+            <span style="font-size:11px; font-weight:700; color:#64748B;">Speed:</span>
+            <button class="font-zoom-btn speed-btn" data-speed="0.75" onclick="PRESENTATION_PLAYER.setSpeed(0.75)">0.75x</button>
+            <button class="font-zoom-btn speed-btn active" data-speed="1.0" onclick="PRESENTATION_PLAYER.setSpeed(1.0)">1x</button>
+            <button class="font-zoom-btn speed-btn" data-speed="1.25" onclick="PRESENTATION_PLAYER.setSpeed(1.25)">1.25x</button>
+            <span style="font-size:11.5px; font-weight:700; color:var(--emerald); margin-left:6px;">
+              ● Auto-Advances Slides
             </span>
           </div>
         </div>

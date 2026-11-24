@@ -4,8 +4,31 @@
 // What the sentence describes physically animates on the canvas!
 // (e.g. money traveling, contracts being signed, trucks driving, scales tilting, gavels striking)
 
+// Universal Polyfill for roundRect across all browsers
+if (typeof CanvasRenderingContext2D !== "undefined" && !CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii = 0) {
+    if (typeof radii === "number") radii = [radii, radii, radii, radii];
+    else if (!Array.isArray(radii)) radii = [0, 0, 0, 0];
+    const [tl, tr, br, bl] = radii.length === 4 ? radii : [radii[0]||0, radii[0]||0, radii[0]||0, radii[0]||0];
+    this.moveTo(x + tl, y);
+    this.lineTo(x + w - tr, y);
+    this.quadraticCurveTo(x + w, y, x + w, y + tr);
+    this.lineTo(x + w, y + h - br);
+    this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+    this.lineTo(x + bl, y + h);
+    this.quadraticCurveTo(x, y + h, x, y + h - bl);
+    this.lineTo(x, y + tl);
+    this.quadraticCurveTo(x, y, x + tl, y);
+    this.closePath();
+    return this;
+  };
+}
+
 (function() {
   window.PRESENTATION_PLAYER = {};
+
+  const LINE_DURATION_MS = 4500; // 4.5s gives ample time to absorb text & kinetic action
+  const SLIDE_TRANSITION_HOLD_MS = 1200; // 1.2s pause on completed slide before advancing
 
   let canvas, ctx;
   let activeData = null;
@@ -13,13 +36,53 @@
   let currentTimeMs = 0;
   let isPlaying = true;
   let fontScale = 1.15; // Prominent default (+15%)
+  let playbackSpeed = 1.0;
   let lastFrameTime = performance.now();
   let animationFrameId = null;
+  let isUserScrubbing = false;
+
+  // Voice Narration
+  let voiceNarrationEnabled = true;
+  let lastSpokenKey = null;
 
   function initPlayer() {
     canvas = document.getElementById("stage_canvas");
     if (!canvas) return;
     ctx = canvas.getContext("2d");
+    setupScrubberEvents();
+    setupKeyboardShortcuts();
+    updateVoiceBtnState();
+  }
+
+  function setupScrubberEvents() {
+    const slider = document.getElementById("anim_timeline_slider");
+    if (!slider) return;
+    slider.addEventListener("mousedown", () => { isUserScrubbing = true; });
+    slider.addEventListener("touchstart", () => { isUserScrubbing = true; });
+    slider.addEventListener("mouseup", () => { isUserScrubbing = false; });
+    slider.addEventListener("touchend", () => { isUserScrubbing = false; });
+    slider.addEventListener("input", (e) => {
+      seekTo(e.target.value);
+    });
+  }
+
+  function setupKeyboardShortcuts() {
+    window.addEventListener("keydown", (e) => {
+      if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+      if (e.code === "Space") {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === "ArrowRight") {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.code === "ArrowLeft") {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.code === "KeyR") {
+        e.preventDefault();
+        seekTo(0);
+      }
+    });
   }
 
   function loadPresentation(data) {
@@ -27,6 +90,8 @@
     currentSceneIdx = 0;
     currentTimeMs = 0;
     isPlaying = true;
+    lastSpokenKey = null;
+    lastFrameTime = performance.now();
     updatePlayBtnState();
     renderTabs();
     switchScene(0);
@@ -57,6 +122,12 @@
     if (!activeData || !activeData.scenes || !activeData.scenes[idx]) return;
     currentSceneIdx = idx;
     currentTimeMs = 0;
+    lastFrameTime = performance.now();
+    lastSpokenKey = null;
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
 
     const tabs = document.querySelectorAll("#anim_scene_tabs .scene-tab-btn");
     tabs.forEach((t, i) => t.classList.toggle("active", i === idx));
@@ -85,22 +156,60 @@
     }
 
     const linesCount = sc.lines ? sc.lines.length : 3;
-    const maxMs = linesCount * 3500;
+    const maxMs = linesCount * LINE_DURATION_MS;
     const slider = document.getElementById("anim_timeline_slider");
     if (slider) {
       slider.max = maxMs;
       slider.value = 0;
     }
+
+    updatePlayBtnState();
   }
 
   function togglePlay() {
-    isPlaying = !isPlaying;
+    if (!activeData || !activeData.scenes) return;
+    const sc = activeData.scenes[currentSceneIdx];
+    const linesCount = sc?.lines?.length || 3;
+    const maxMs = linesCount * LINE_DURATION_MS;
+
+    if (!isPlaying) {
+      // If at end of entire presentation, replay from slide 0!
+      if (currentSceneIdx === (activeData.scenes.length - 1) && currentTimeMs >= maxMs) {
+        switchScene(0);
+      } else if (currentTimeMs >= maxMs) {
+        // If at end of current slide, advance or restart
+        if (currentSceneIdx < activeData.scenes.length - 1) {
+          switchScene(currentSceneIdx + 1);
+        } else {
+          currentTimeMs = 0;
+        }
+      }
+      lastFrameTime = performance.now();
+      isPlaying = true;
+    } else {
+      isPlaying = false;
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    }
     updatePlayBtnState();
   }
 
   function updatePlayBtnState() {
     const btn = document.getElementById("btn_anim_play_pause");
-    if (btn) btn.innerHTML = isPlaying ? "⏸ Pause" : "▶ Play Animation";
+    if (!btn) return;
+    const sc = activeData?.scenes?.[currentSceneIdx];
+    const linesCount = sc?.lines?.length || 3;
+    const maxMs = linesCount * LINE_DURATION_MS;
+    const isAtPresentationEnd = currentSceneIdx === ((activeData?.scenes?.length || 1) - 1) && currentTimeMs >= maxMs;
+
+    if (isAtPresentationEnd) {
+      btn.innerHTML = "↺ Replay All";
+    } else if (isPlaying) {
+      btn.innerHTML = "⏸ Pause";
+    } else {
+      btn.innerHTML = "▶ Play";
+    }
   }
 
   function setFontScale(scale, btnEl) {
@@ -109,23 +218,98 @@
     if (btnEl) btnEl.classList.add("active");
   }
 
+  function setSpeed(spd) {
+    playbackSpeed = spd;
+    document.querySelectorAll(".speed-btn").forEach(b => {
+      b.classList.toggle("active", parseFloat(b.dataset.speed) === spd);
+    });
+  }
+
+  function toggleVoice() {
+    voiceNarrationEnabled = !voiceNarrationEnabled;
+    if (!voiceNarrationEnabled && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    updateVoiceBtnState();
+  }
+
+  function updateVoiceBtnState() {
+    const btn = document.getElementById("btn_voice_toggle");
+    if (btn) {
+      btn.innerHTML = voiceNarrationEnabled ? "🔊 Voice: ON" : "🔇 Voice: OFF";
+      btn.style.color = voiceNarrationEnabled ? "#059669" : "#64748B";
+      btn.style.borderColor = voiceNarrationEnabled ? "#10B981" : "#CBD5E1";
+    }
+  }
+
+  function speakLine(sentence, lineIdx) {
+    if (!voiceNarrationEnabled || !window.speechSynthesis || !sentence) return;
+    const key = `${currentSceneIdx}_${lineIdx}`;
+    if (lastSpokenKey === key) return;
+    lastSpokenKey = key;
+
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(sentence);
+      utterance.rate = Math.max(0.85, Math.min(1.2, playbackSpeed * 0.95));
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn("Speech error:", e);
+    }
+  }
+
+  function prevSlide() {
+    if (currentSceneIdx > 0) {
+      switchScene(currentSceneIdx - 1);
+    }
+  }
+
+  function nextSlide() {
+    if (activeData?.scenes && currentSceneIdx < activeData.scenes.length - 1) {
+      switchScene(currentSceneIdx + 1);
+    }
+  }
+
+  function seekTo(ms) {
+    currentTimeMs = Math.max(0, Number(ms));
+    lastSpokenKey = null; // Re-trigger speech if scrubbed to a different line
+    if (!isPlaying) {
+      drawScene();
+    }
+  }
+
   // ==========================================
   // ANIMATION LOOP & CANVAS RENDERER
   // ==========================================
   function renderLoop(now) {
-    const dt = now - lastFrameTime;
+    const dt = (now - lastFrameTime) * playbackSpeed;
     lastFrameTime = now;
 
     if (isPlaying && activeData && activeData.scenes) {
       currentTimeMs += dt;
       const sc = activeData.scenes[currentSceneIdx];
       const linesCount = sc?.lines?.length || 3;
-      const maxMs = linesCount * 3500;
-      if (currentTimeMs >= maxMs) {
-        currentTimeMs = maxMs; // Hold at end of scene
+      const maxMs = linesCount * LINE_DURATION_MS;
+      const totalSlideMs = maxMs + SLIDE_TRANSITION_HOLD_MS;
+
+      // Check if current slide has completed (including transition hold)
+      if (currentTimeMs >= totalSlideMs) {
+        if (currentSceneIdx < activeData.scenes.length - 1) {
+          // Auto-advance to next slide!
+          switchScene(currentSceneIdx + 1);
+        } else {
+          // Presentation finished
+          currentTimeMs = maxMs;
+          isPlaying = false;
+          updatePlayBtnState();
+        }
       }
-      const slider = document.getElementById("anim_timeline_slider");
-      if (slider) slider.value = currentTimeMs;
+
+      if (!isUserScrubbing) {
+        const slider = document.getElementById("anim_timeline_slider");
+        if (slider) slider.value = Math.min(maxMs, currentTimeMs);
+      }
     }
 
     drawScene();
@@ -236,13 +420,18 @@
   function drawActionScene(sc, isPhase1) {
     const lines = sc.lines || [];
     const count = Math.max(1, lines.length);
-    const lineDurationMs = 3500;
+    const lineDurationMs = LINE_DURATION_MS;
 
     // Determine currently playing line index
     const activeLineIdx = Math.min(count - 1, Math.floor(currentTimeMs / lineDurationMs));
     const activeLine = lines[activeLineIdx] || {};
     const lineElapsedMs = currentTimeMs - (activeLineIdx * lineDurationMs);
     const lineProgress = Math.min(1.0, Math.max(0, lineElapsedMs / lineDurationMs));
+
+    // Synthesize Teacher Speech for Active Sentence
+    if (activeLine && activeLine.sentence) {
+      speakLine(activeLine.sentence, activeLineIdx);
+    }
 
     // Phase 2 Reference Banner (if any)
     if (sc.story_point_ref) {
@@ -417,16 +606,16 @@
     };
 
     const lottieId = map[actionType] || "activity";
-    if (currentLottieId === lottieId && currentLottieAnim) {
+    if (currentLottieId === lottieId) {
       return;
     }
+    currentLottieId = lottieId;
 
     if (currentLottieAnim) {
       try { currentLottieAnim.destroy(); } catch (e) {}
       currentLottieAnim = null;
     }
 
-    currentLottieId = lottieId;
     overlay.innerHTML = `<div id="lottie_badge" style="position:absolute; top:20px; right:35px; width:48px; height:48px; background:rgba(255,255,255,0.95); backdrop-filter:blur(8px); border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08); border:1.5px solid #E2E8F0; display:flex; align-items:center; justify-content:center; padding:6px; pointer-events:none;"></div>`;
 
     try {
@@ -3111,11 +3300,11 @@
     switchScene: switchScene,
     togglePlay: togglePlay,
     setFontScale: setFontScale,
-    prevSlide: () => switchScene(Math.max(0, currentSceneIdx - 1)),
-    nextSlide: () => activeData?.scenes && switchScene(Math.min(activeData.scenes.length - 1, currentSceneIdx + 1)),
-    seekTo: (ms) => {
-      currentTimeMs = Number(ms);
-    }
+    setSpeed: setSpeed,
+    toggleVoice: toggleVoice,
+    prevSlide: prevSlide,
+    nextSlide: nextSlide,
+    seekTo: seekTo
   };
 
   window.addEventListener("DOMContentLoaded", initPlayer);
