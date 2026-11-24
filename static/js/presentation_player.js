@@ -231,12 +231,22 @@
       ctx.restore();
     }
 
+    // Layout Archetype
+    const layout = sc.layout_archetype || detectLayoutFallback(sc);
+    updateLayoutBadge(layout);
+
+    // Draw Layout Frame / Backdrop
+    drawLayoutFrame(layout, sc, isPhase1, activeLineIdx, lineProgress);
+
     // Line Stepper Indicator at top of stage
     drawLineStepperBar(lines, activeLineIdx, lineProgress);
 
     // Render the specific Kinetic Action on the Stage
     const actionType = activeLine.action_type || detectActionFallback(activeLine);
     const payload = activeLine.action_payload || {};
+
+    // Trigger synced Lottie Vector Overlay
+    updateLottieAnimation(actionType);
 
     ctx.save();
     switch (actionType) {
@@ -264,6 +274,30 @@
       case "gavel_verdict":
         drawGavelVerdictAction(payload, lineProgress);
         break;
+      case "clock_limitation":
+        drawClockLimitationAction(payload, lineProgress);
+        break;
+      case "property_transfer":
+        drawPropertyTransferAction(payload, lineProgress);
+        break;
+      case "condition_checklist":
+        drawConditionChecklistAction(payload, lineProgress);
+        break;
+      case "lock_security":
+        drawLockSecurityAction(payload, lineProgress);
+        break;
+      case "corporate_board":
+        drawCorporateBoardAction(payload, lineProgress);
+        break;
+      case "notice_dispatch":
+        drawNoticeDispatchAction(payload, lineProgress);
+        break;
+      case "penalty_fine":
+        drawPenaltyFineAction(payload, lineProgress);
+        break;
+      case "waterfall_flow":
+        drawWaterfallFlowAction(payload, lineProgress);
+        break;
       default:
         drawHandshakeConsentAction(payload, lineProgress);
     }
@@ -273,16 +307,290 @@
     drawBottomActionSubtitle(activeLine, activeLineIdx + 1, count, lineProgress);
   }
 
+  function updateLayoutBadge(layout) {
+    const badge = document.getElementById("anim_layout_badge");
+    if (!badge) return;
+    const names = {
+      "layout_bilateral_split": "👥 BILATERAL SPLIT",
+      "layout_sequential_pipeline": "⚡ PIPELINE FLOW",
+      "layout_quadrant_grid": "🧩 4-PILLAR GRID",
+      "layout_precedent_parchment": "📜 JUDICIAL RATIO",
+      "layout_hero_stage": "🎭 HERO STAGE"
+    };
+    badge.textContent = names[layout] || "🎭 HERO STAGE";
+  }
+
+  function detectLayoutFallback(sc) {
+    const t = ((sc.tab_title || "") + " " + (sc.tag || "")).toLowerCase();
+    if (t.includes("party") || t.includes("parties") || t.includes("origin") || t.includes("proposal") || t.includes("versus") || t.includes("vs")) {
+      return "layout_bilateral_split";
+    }
+    if (t.includes("ingredient") || t.includes("elements") || t.includes("conditions") || t.includes("matrix")) {
+      return "layout_quadrant_grid";
+    }
+    if (t.includes("precedent") || t.includes("landmark") || t.includes("verdict") || t.includes("judicial") || t.includes("ratio")) {
+      return "layout_precedent_parchment";
+    }
+    if (t.includes("process") || t.includes("lifecycle") || t.includes("timeline") || t.includes("flow") || t.includes("breach &")) {
+      return "layout_sequential_pipeline";
+    }
+    return "layout_hero_stage";
+  }
+
   function detectActionFallback(line) {
     const s = ((line.line_title || "") + " " + (line.sentence || "")).toLowerCase();
-    if (s.includes("money") || s.includes("rent") || s.includes("pay") || s.includes("rupee") || s.includes("consideration") || s.includes("advance")) return "money_transfer";
-    if (s.includes("sign") || s.includes("contract") || s.includes("agreement") || s.includes("deed") || s.includes("register")) return "contract_sign";
-    if (s.includes("truck") || s.includes("deliver") || s.includes("transport") || s.includes("goods") || s.includes("shipment")) return "goods_transport";
-    if (s.includes("breach") || s.includes("delay") || s.includes("fail") || s.includes("dispute") || s.includes("broken")) return "breach_block";
-    if (s.includes("scale") || s.includes("balance") || s.includes("ordinary vs") || s.includes("safe harbor")) return "balance_scale";
-    if (s.includes("profit") || s.includes("loss") || s.includes("damage") || s.includes("meter")) return "financial_meter";
-    if (s.includes("court") || s.includes("verdict") || s.includes("judge") || s.includes("gavel") || s.includes("precedent")) return "gavel_verdict";
+    if (s.includes("money") || s.includes("rent") || s.includes("pay") || s.includes("rupee") || s.includes("consideration") || s.includes("advance") || s.includes("deposit")) return "money_transfer";
+    if (s.includes("sign") || s.includes("contract") || s.includes("agreement") || s.includes("deed") || s.includes("register") || s.includes("executed")) return "contract_sign";
+    if (s.includes("truck") || s.includes("deliver") || s.includes("transport") || s.includes("goods") || s.includes("shipment") || s.includes("cargo")) return "goods_transport";
+    if (s.includes("breach") || s.includes("delay") || s.includes("fail") || s.includes("dispute") || s.includes("broken") || s.includes("default")) return "breach_block";
+    if (s.includes("scale") || s.includes("balance") || s.includes("ordinary vs") || s.includes("safe harbor") || s.includes("weigh")) return "balance_scale";
+    if (s.includes("profit") || s.includes("loss") || s.includes("damage") || s.includes("meter") || s.includes("trend") || s.includes("revenue")) return "financial_meter";
+    if (s.includes("court") || s.includes("verdict") || s.includes("judge") || s.includes("gavel") || s.includes("precedent") || s.includes("ruling")) return "gavel_verdict";
+    if (s.includes("time") || s.includes("clock") || s.includes("limitation") || s.includes("period") || s.includes("deadline") || s.includes("expire")) return "clock_limitation";
+    if (s.includes("property") || s.includes("land") || s.includes("house") || s.includes("villa") || s.includes("conveyance") || s.includes("possession")) return "property_transfer";
+    if (s.includes("condition") || s.includes("checklist") || s.includes("ingredient") || s.includes("criteria") || s.includes("test")) return "condition_checklist";
+    if (s.includes("lock") || s.includes("security") || s.includes("guarantee") || s.includes("fiduciary") || s.includes("shield")) return "lock_security";
+    if (s.includes("board") || s.includes("resolution") || s.includes("vote") || s.includes("meeting") || s.includes("company") || s.includes("corporate")) return "corporate_board";
+    if (s.includes("notice") || s.includes("speed post") || s.includes("dispatch") || s.includes("letter") || s.includes("telegram")) return "notice_dispatch";
+    if (s.includes("penalty") || s.includes("fine") || s.includes("late fee") || s.includes("challan") || s.includes("punitive")) return "penalty_fine";
+    if (s.includes("waterfall") || s.includes("computation") || s.includes("deduct") || s.includes("calculation") || s.includes("quantum")) return "waterfall_flow";
     return "handshake_consent";
+  }
+
+  // ============================================================
+  // LOTTIE VECTOR ANIMATION OVERLAY MANAGER
+  // ============================================================
+  let currentLottieAnim = null;
+  let currentLottieId = null;
+
+  function updateLottieAnimation(actionType) {
+    const overlay = document.getElementById("lottie_overlay");
+    if (!overlay || !window.lottie) return;
+
+    const map = {
+      "money_transfer": "dollar-sign",
+      "contract_sign": "file-text",
+      "handshake_consent": "check-circle",
+      "goods_transport": "package",
+      "breach_block": "alert-triangle",
+      "balance_scale": "layers",
+      "financial_meter": "trending-down",
+      "gavel_verdict": "award",
+      "clock_limitation": "clock",
+      "property_transfer": "package",
+      "condition_checklist": "clipboard",
+      "lock_security": "lock",
+      "corporate_board": "briefcase",
+      "notice_dispatch": "file-text",
+      "penalty_fine": "alert-circle",
+      "waterfall_flow": "activity"
+    };
+
+    const lottieId = map[actionType] || "activity";
+    if (currentLottieId === lottieId && currentLottieAnim) {
+      return;
+    }
+
+    if (currentLottieAnim) {
+      try { currentLottieAnim.destroy(); } catch (e) {}
+      currentLottieAnim = null;
+    }
+
+    currentLottieId = lottieId;
+    overlay.innerHTML = `<div id="lottie_badge" style="position:absolute; top:20px; right:35px; width:48px; height:48px; background:rgba(255,255,255,0.95); backdrop-filter:blur(8px); border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.08); border:1.5px solid #E2E8F0; display:flex; align-items:center; justify-content:center; padding:6px; pointer-events:none;"></div>`;
+
+    try {
+      const container = document.getElementById("lottie_badge");
+      if (container) {
+        currentLottieAnim = window.lottie.loadAnimation({
+          container: container,
+          renderer: 'svg',
+          loop: true,
+          autoplay: isPlaying,
+          path: `/static/assets/lottie/${lottieId}.json`
+        });
+      }
+    } catch (e) {
+      console.warn("[LOTTIE] Load error for", lottieId, e);
+    }
+  }
+
+  // ============================================================
+  // SLIDE LAYOUT ARCHETYPE FRAME RENDERERS (5 DISTINCT LAYOUTS)
+  // ============================================================
+  function drawLayoutFrame(layout, sc, isPhase1, activeLineIdx, progress) {
+    ctx.save();
+    switch (layout) {
+      case "layout_bilateral_split":
+        drawBilateralSplitFrame(sc, isPhase1, activeLineIdx, progress);
+        break;
+      case "layout_sequential_pipeline":
+        drawSequentialPipelineFrame(sc, isPhase1, activeLineIdx, progress);
+        break;
+      case "layout_quadrant_grid":
+        drawQuadrantGridFrame(sc, isPhase1, activeLineIdx, progress);
+        break;
+      case "layout_precedent_parchment":
+        drawPrecedentParchmentFrame(sc, isPhase1, activeLineIdx, progress);
+        break;
+      case "layout_hero_stage":
+      default:
+        drawHeroStageFrame(sc, isPhase1, activeLineIdx, progress);
+    }
+    ctx.restore();
+  }
+
+  function drawBilateralSplitFrame(sc, isPhase1, activeLineIdx, progress) {
+    ctx.save();
+    // Left Zone (Party A / Promisor)
+    ctx.fillStyle = "rgba(238, 242, 255, 0.45)";
+    ctx.beginPath();
+    ctx.roundRect(50, 128, 220, 246, 12);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(199, 210, 254, 0.7)";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.stroke();
+
+    // Right Zone (Party B / Promisee)
+    ctx.fillStyle = "rgba(236, 253, 245, 0.45)";
+    ctx.beginPath();
+    ctx.roundRect(730, 128, 220, 246, 12);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(167, 243, 208, 0.7)";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Column Header Tags
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#4338CA";
+    ctx.font = "800 10.5px JetBrains Mono, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("🏛️ PARTY A / PROMISOR", 160, 146);
+
+    ctx.fillStyle = "#047857";
+    ctx.font = "800 10.5px JetBrains Mono, monospace";
+    ctx.fillText("⚖️ PARTY B / PROMISEE", 840, 146);
+
+    // Center Dynamic Interaction Conduit
+    ctx.strokeStyle = "rgba(226, 232, 240, 0.8)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(270, 250);
+    ctx.lineTo(730, 250);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawSequentialPipelineFrame(sc, isPhase1, activeLineIdx, progress) {
+    ctx.save();
+    const stages = ["1. Agreement & Terms", "2. Performance / Incident", "3. Statutory Consequence"];
+    const startX = 140;
+    const segW = 210;
+    const gap = 45;
+    const y = 138;
+
+    stages.forEach((st, i) => {
+      const segX = startX + i * (segW + gap);
+      const isCur = i === activeLineIdx || (activeLineIdx >= stages.length && i === stages.length - 1);
+      const isPast = i < activeLineIdx;
+
+      // Conduit Pipe Connector
+      if (i < stages.length - 1) {
+        ctx.strokeStyle = isPast ? "#059669" : "#CBD5E1";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(segX + segW, y);
+        ctx.lineTo(segX + segW + gap, y);
+        ctx.stroke();
+
+        ctx.fillStyle = isPast ? "#059669" : "#94A3B8";
+        ctx.beginPath();
+        ctx.moveTo(segX + segW + gap / 2 + 4, y);
+        ctx.lineTo(segX + segW + gap / 2 - 4, y - 5);
+        ctx.lineTo(segX + segW + gap / 2 - 4, y + 5);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = isCur ? "#EEF2FF" : (isPast ? "#ECFDF5" : "#F8FAFC");
+      ctx.strokeStyle = isCur ? "#4F46E5" : (isPast ? "#059669" : "#E2E8F0");
+      ctx.lineWidth = isCur ? 2 : 1.5;
+      ctx.beginPath();
+      ctx.roundRect(segX, y - 14, segW, 28, 6);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = isCur ? "#4338CA" : (isPast ? "#047857" : "#64748B");
+      ctx.font = `800 ${Math.round(11 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(st, segX + segW / 2, y + 4);
+    });
+    ctx.restore();
+  }
+
+  function drawQuadrantGridFrame(sc, isPhase1, activeLineIdx, progress) {
+    ctx.save();
+    const yTop = 130;
+    const h = 244;
+    ctx.strokeStyle = "rgba(226, 232, 240, 0.5)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+
+    ctx.beginPath();
+    ctx.moveTo(500, yTop);
+    ctx.lineTo(500, yTop + h);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(60, yTop + h / 2);
+    ctx.lineTo(940, yTop + h / 2);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#94A3B8";
+    ctx.font = "800 10px JetBrains Mono, monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("PILLAR 1: CAPACITY & CONSENT", 70, yTop + 16);
+    ctx.fillText("PILLAR 3: LAWFUL OBJECT", 70, yTop + h / 2 + 16);
+    ctx.textAlign = "right";
+    ctx.fillText("PILLAR 2: CONSIDERATION", 930, yTop + 16);
+    ctx.fillText("PILLAR 4: LEGAL VALIDITY", 930, yTop + h / 2 + 16);
+    ctx.restore();
+  }
+
+  function drawPrecedentParchmentFrame(sc, isPhase1, activeLineIdx, progress) {
+    ctx.save();
+    const px = 100, py = 126, pw = 800, ph = 250;
+    ctx.fillStyle = "#FFFDF9";
+    ctx.strokeStyle = "#D97706";
+    ctx.lineWidth = 2;
+    ctx.shadowColor = "rgba(180, 83, 9, 0.12)";
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.roundRect(px, py, pw, ph, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    ctx.strokeStyle = "#FDE68A";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(px + 8, py + 8, pw - 16, ph - 16, 6);
+    ctx.stroke();
+
+    ctx.fillStyle = "#B45309";
+    ctx.font = "800 11px JetBrains Mono, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("⚖️ IN THE HIGH COURT OF JUDICATURE / SUPREME COURT RATIO", 500, py + 26);
+    ctx.restore();
+  }
+
+  function drawHeroStageFrame(sc, isPhase1, activeLineIdx, progress) {
+    ctx.save();
+    const radGrd = ctx.createRadialGradient(500, 250, 40, 500, 250, 400);
+    radGrd.addColorStop(0, isPhase1 ? "rgba(254, 243, 199, 0.35)" : "rgba(236, 253, 245, 0.35)");
+    radGrd.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = radGrd;
+    ctx.fillRect(60, 126, 880, 250);
+    ctx.restore();
   }
 
   function drawLineStepperBar(lines, activeLineIdx, lineProgress) {
@@ -1021,6 +1329,677 @@
       ctx.font = `600 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
       wrapCanvasText(ctx, ratio, cx, dy + 48, 410, 18);
     }
+    ctx.restore();
+  }
+
+  // ============================================================
+  // ACTION 9: CLOCK LIMITATION / TIME IS OF THE ESSENCE
+  // ============================================================
+  function drawClockLimitationAction(payload, progress) {
+    const title = payload.deadline_title || "Limitation Period / Time of Essence";
+    const timeLimit = payload.time_limit || "3 Years from Date of Breach";
+    const status = payload.status || "Within Statutory Limitation Period";
+
+    const cx = 500, cy = 215;
+
+    // Clock Outer Metallic Casing
+    ctx.save();
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = "#475569";
+    ctx.lineWidth = 4;
+    ctx.shadowColor = "rgba(71, 85, 105, 0.25)";
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 48, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // 12 Dial Tick Marks
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      const x1 = cx + Math.cos(a) * 36;
+      const y1 = cy + Math.sin(a) * 36;
+      const x2 = cx + Math.cos(a) * 42;
+      const y2 = cy + Math.sin(a) * 42;
+      ctx.strokeStyle = i % 3 === 0 ? "#0F172A" : "#94A3B8";
+      ctx.lineWidth = i % 3 === 0 ? 2.5 : 1.5;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    }
+
+    // Animated Rotating Clock Hands
+    const secAngle = -Math.PI / 2 + progress * Math.PI * 6; // Sweeps 3 full rotations
+    const minAngle = -Math.PI / 2 + progress * Math.PI * 0.8;
+
+    // Minute Hand (Dark Indigo)
+    ctx.strokeStyle = "#1E293B";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(minAngle) * 26, cy + Math.sin(minAngle) * 26);
+    ctx.stroke();
+
+    // Second Hand (Crimson Red with Spring Tick Vibration)
+    ctx.strokeStyle = "#DC2626";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(secAngle) * 34, cy + Math.sin(secAngle) * 34);
+    ctx.stroke();
+
+    // Center Gold Pin
+    ctx.fillStyle = "#F59E0B";
+    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+
+    // Swinging Brass Pendulum Below Clock
+    const pendLen = 50;
+    const pendAngle = Math.sin(progress * 18) * 0.32;
+    const pendX = cx + Math.sin(pendAngle) * pendLen;
+    const pendY = cy + 48 + Math.cos(pendAngle) * pendLen;
+
+    ctx.strokeStyle = "#D97706";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(cx, cy + 46); ctx.lineTo(pendX, pendY); ctx.stroke();
+
+    ctx.fillStyle = "#F59E0B";
+    ctx.strokeStyle = "#B45309";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(pendX, pendY, 9, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    // Left Statutory Deadline Card
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = "#E2E8F0";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(100, cy - 42, 280, 84, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#DC2626";
+    ctx.font = `800 11px JetBrains Mono, monospace`;
+    ctx.textAlign = "left";
+    ctx.fillText("⏳ STATUTORY TIME LIMIT", 118, cy - 18);
+
+    ctx.fillStyle = "#0F172A";
+    ctx.font = `800 ${Math.round(13 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.fillText(title, 118, cy + 6);
+
+    ctx.fillStyle = "#64748B";
+    ctx.font = `600 12px Plus Jakarta Sans, sans-serif`;
+    ctx.fillText(timeLimit, 118, cy + 28);
+
+    // Right Compliance / Barred Status Card
+    ctx.fillStyle = "#ECFDF5";
+    ctx.strokeStyle = "#10B981";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(620, cy - 42, 280, 84, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#047857";
+    ctx.font = `800 11px JetBrains Mono, monospace`;
+    ctx.textAlign = "left";
+    ctx.fillText("⚖️ LEGAL EFFECT OF TIME", 638, cy - 18);
+
+    ctx.fillStyle = "#065F46";
+    ctx.font = `800 ${Math.round(12.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, status, 638, cy + 8, 250, 18, "left", 2);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // ACTION 10: PROPERTY TRANSFER & CONVEYANCE OF PREMISES
+  // ============================================================
+  function drawPropertyTransferAction(payload, progress) {
+    const propName = payload.property_name || "Commercial Land & Building";
+    const transferor = payload.transferor || "Owner (Transferor)";
+    const transferee = payload.transferee || "Purchaser (Transferee)";
+    const status = payload.title_status || "Absolute Title & Possession Conveyed";
+
+    const yCenter = 225;
+    const xLeft = 170;
+    const xRight = 830;
+
+    // Parties
+    drawActorPillar(xLeft, yCenter, transferor, "user", "#4F46E5", "SELLER");
+    drawActorPillar(xRight, yCenter, transferee, "user", "#059669", "BUYER", progress > 0.5);
+
+    // Architectural Villa Silhoutte in Center
+    ctx.save();
+    const vx = 500, vy = yCenter - 15;
+    ctx.fillStyle = "#F8FAFC";
+    ctx.strokeStyle = "#3B82F6";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(vx - 65, vy - 35, 130, 80, 8);
+    ctx.fill(); ctx.stroke();
+
+    // Triangular Roof
+    ctx.fillStyle = "#EFF6FF";
+    ctx.beginPath();
+    ctx.moveTo(vx - 75, vy - 35);
+    ctx.lineTo(vx, vy - 70);
+    ctx.lineTo(vx + 75, vy - 35);
+    ctx.closePath();
+    ctx.fill(); ctx.stroke();
+
+    // Property Label
+    ctx.fillStyle = "#1E40AF";
+    ctx.font = "800 10.5px JetBrains Mono, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("TITLE DEED PREMISES", vx, vy + 2);
+    ctx.fillStyle = "#0F172A";
+    ctx.font = `700 11px Plus Jakarta Sans, sans-serif`;
+    ctx.fillText(propName, vx, vy + 24);
+
+    // Flying Golden Ornate Key from Left to Right
+    const keyX = (1 - progress) * (xLeft + 55) + progress * (xRight - 55);
+    const keyY = yCenter - 55 - Math.sin(progress * Math.PI) * 45;
+
+    ctx.shadowColor = "rgba(234, 179, 8, 0.6)";
+    ctx.shadowBlur = 14;
+
+    // Key Ring
+    ctx.strokeStyle = "#CA8A04";
+    ctx.fillStyle = "#FDE047";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(keyX - 14, keyY, 10, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+
+    // Key Shaft & Teeth
+    ctx.beginPath();
+    ctx.moveTo(keyX - 4, keyY);
+    ctx.lineTo(keyX + 22, keyY);
+    ctx.lineTo(keyX + 22, keyY + 8);
+    ctx.moveTo(keyX + 14, keyY);
+    ctx.lineTo(keyX + 14, keyY + 6);
+    ctx.stroke();
+
+    // Title Status Badge Below
+    ctx.fillStyle = "#ECFDF5";
+    ctx.strokeStyle = "#059669";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(vx - 140, vy + 58, 280, 28, 6);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#065F46";
+    ctx.font = `800 11px JetBrains Mono, monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText(`🔑 ${status.toUpperCase()}`, vx, vy + 76);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // ACTION 11: STATUTORY CONDITION CHECKLIST BOARD
+  // ============================================================
+  function drawConditionChecklistAction(payload, progress) {
+    const criteria = payload.criteria || [
+      "1. Free Consent of Parties (Section 14)",
+      "2. Competency of Parties (Section 11)",
+      "3. Lawful Consideration & Object (Section 23)",
+      "4. Not Expressly Declared Void (Section 24-30)"
+    ];
+    const status = payload.compliance_status || "All Essential Ingredients Fully Satisfied";
+
+    const bx = 220, by = 138, bw = 560, bh = 196;
+
+    ctx.save();
+    // Clipboard Body
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = "#CBD5E1";
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = "rgba(0, 0, 0, 0.06)";
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Top Metallic Clip
+    ctx.fillStyle = "#475569";
+    ctx.beginPath();
+    ctx.roundRect(bx + bw / 2 - 45, by - 10, 90, 18, 4);
+    ctx.fill();
+
+    // Header
+    ctx.fillStyle = "#4338CA";
+    ctx.font = `800 11.5px JetBrains Mono, monospace`;
+    ctx.textAlign = "left";
+    ctx.fillText("📋 STATUTORY COMPLIANCE CHECKLIST", bx + 24, by + 28);
+
+    // Checklist Rows
+    const rowH = 32;
+    const count = criteria.length;
+    criteria.forEach((crit, i) => {
+      const ry = by + 46 + i * rowH;
+      const isChecked = progress >= (i + 1) / (count + 0.5);
+
+      // Row Background
+      ctx.fillStyle = isChecked ? "#ECFDF5" : "#F8FAFC";
+      ctx.strokeStyle = isChecked ? "#A7F3D0" : "#E2E8F0";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(bx + 20, ry, bw - 40, 26, 6);
+      ctx.fill(); ctx.stroke();
+
+      // Check Circle Icon
+      ctx.fillStyle = isChecked ? "#059669" : "#CBD5E1";
+      ctx.beginPath();
+      ctx.arc(bx + 38, ry + 13, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // White Checkmark
+      if (isChecked) {
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(bx + 34, ry + 13);
+        ctx.lineTo(bx + 37, ry + 16);
+        ctx.lineTo(bx + 43, ry + 10);
+        ctx.stroke();
+      }
+
+      // Criterion Text
+      ctx.fillStyle = isChecked ? "#065F46" : "#475569";
+      ctx.font = `700 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText(crit, bx + 56, ry + 17);
+    });
+
+    // Bottom Compliance Pill
+    if (progress > 0.8) {
+      ctx.fillStyle = "#059669";
+      ctx.font = `800 11px JetBrains Mono, monospace`;
+      ctx.textAlign = "right";
+      ctx.fillText(`✓ ${status.toUpperCase()}`, bx + bw - 24, by + 28);
+    }
+    ctx.restore();
+  }
+
+  // ============================================================
+  // ACTION 12: LOCK & STATUTORY FIDUCIARY SECURITY
+  // ============================================================
+  function drawLockSecurityAction(payload, progress) {
+    const title = payload.security_type || "Statutory Bank Guarantee / Non-Disclosure";
+    const status = payload.status || "Security Lock Engaged • Valid Protection";
+    const scope = payload.protection_scope || "Protects against unauthorized breach or breach of trust";
+
+    const cx = 500, cy = 220;
+
+    ctx.save();
+    // Radiant Cyan Fiduciary Shield Ring
+    const shieldP = (progress * 2) % 1.0;
+    ctx.strokeStyle = `rgba(6, 182, 212, ${0.8 - shieldP * 0.6})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(cx, cy + 5, 55 + shieldP * 30, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Steel Shackle (Arch)
+    const isUnlocked = progress > 0.55;
+    const shackleOffset = isUnlocked ? -14 : 0;
+    ctx.strokeStyle = "#64748B";
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.arc(cx, cy - 20 + shackleOffset, 24, Math.PI, 0, false);
+    ctx.lineTo(cx + 24, cy - 2);
+    if (!isUnlocked) {
+      ctx.lineTo(cx - 24, cy - 2);
+    }
+    ctx.stroke();
+
+    // Lock Body
+    ctx.fillStyle = "#0284C7";
+    ctx.strokeStyle = "#0369A1";
+    ctx.lineWidth = 3;
+    ctx.shadowColor = "rgba(2, 132, 199, 0.35)";
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.roundRect(cx - 40, cy - 8, 80, 64, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Keyhole
+    ctx.fillStyle = "#FFFFFF";
+    ctx.beginPath();
+    ctx.arc(cx, cy + 16, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx - 3, cy + 18);
+    ctx.lineTo(cx + 3, cy + 18);
+    ctx.lineTo(cx + 5, cy + 32);
+    ctx.lineTo(cx - 5, cy + 32);
+    ctx.closePath();
+    ctx.fill();
+
+    // Left Security Detail Card
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = "#BAE6FD";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(110, cy - 35, 270, 78, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#0284C7";
+    ctx.font = "800 11px JetBrains Mono, monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("🛡️ STATUTORY SECURITY", 128, cy - 12);
+    ctx.fillStyle = "#0F172A";
+    ctx.font = `800 ${Math.round(12.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, title, 128, cy + 10, 235, 16, "left", 2);
+
+    // Right Protection Scope Card
+    ctx.fillStyle = "#F0FDF4";
+    ctx.strokeStyle = "#86EFAC";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(620, cy - 35, 270, 78, 10);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#15803D";
+    ctx.font = "800 11px JetBrains Mono, monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("🔒 FIDUCIARY STATUS", 638, cy - 12);
+    ctx.fillStyle = "#166534";
+    ctx.font = `700 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, status + ": " + scope, 638, cy + 10, 235, 16, "left", 2);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // ACTION 13: CORPORATE BOARDROOM & SHAREHOLDER RESOLUTION
+  // ============================================================
+  function drawCorporateBoardAction(payload, progress) {
+    const compName = payload.company_name || "Corporate Enterprise Ltd.";
+    const resolution = payload.resolution || "Board Resolution / Shareholder Voting";
+    const voting = payload.voting_result || "85% Assent (Resolution Carried)";
+
+    const bx = 500, by = 220;
+
+    ctx.save();
+    // Executive Boardroom Conference Table (Perspective Oval)
+    ctx.fillStyle = "#78350F";
+    ctx.strokeStyle = "#451A03";
+    ctx.lineWidth = 4;
+    ctx.shadowColor = "rgba(69, 26, 3, 0.25)";
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.ellipse(bx, by, 170, 60, 0, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Table Inner Gloss Ring
+    ctx.strokeStyle = "#92400E";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(bx, by, 150, 48, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // 6 Attendee Seats around the Table
+    for (let s = 0; s < 6; s++) {
+      const a = (s / 6) * Math.PI * 2;
+      const sx = bx + Math.cos(a) * 195;
+      const sy = by + Math.sin(a) * 78;
+
+      ctx.fillStyle = "#1E293B";
+      ctx.strokeStyle = "#38BDF8";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 14, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "800 10px JetBrains Mono, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`D${s+1}`, sx, sy + 4);
+    }
+
+    // Floating Center Holographic Resolution Card
+    ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+    ctx.strokeStyle = "#4F46E5";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(bx - 140, by - 26, 280, 52, 8);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#4F46E5";
+    ctx.font = "800 10.5px JetBrains Mono, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(compName.toUpperCase(), bx, by - 8);
+
+    ctx.fillStyle = "#0F172A";
+    ctx.font = `800 ${Math.round(12 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    ctx.fillText(resolution, bx, by + 12);
+
+    // Voting Progress Bar Below Table
+    const vWidth = 320;
+    const vx = bx - vWidth / 2;
+    const vy = by + 94;
+
+    ctx.fillStyle = "#F1F5F9";
+    ctx.strokeStyle = "#CBD5E1";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(vx, vy, vWidth, 24, 6);
+    ctx.fill(); ctx.stroke();
+
+    // Green Assent Fill
+    const fillW = (vWidth - 4) * Math.min(1.0, progress * 1.2) * 0.85;
+    ctx.fillStyle = "#059669";
+    ctx.beginPath();
+    ctx.roundRect(vx + 2, vy + 2, fillW, 20, 4);
+    ctx.fill();
+
+    ctx.fillStyle = "#065F46";
+    ctx.font = `800 11px JetBrains Mono, monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText(`🗳️ ${voting.toUpperCase()}`, bx, vy + 16);
+
+    ctx.restore();
+  }
+
+  // ============================================================
+  // ACTION 14: LEGAL NOTICE DISPATCH VIA REGISTERED SPEED POST
+  // ============================================================
+  function drawNoticeDispatchAction(payload, progress) {
+    const noticeType = payload.notice_type || "Statutory Legal Notice of Termination";
+    const sender = payload.sender || "Sender (Aggrieved Party)";
+    const recipient = payload.recipient || "Recipient (Defaulting Party)";
+    const status = payload.delivery_status || "Registered Speed Post with AD Delivered";
+
+    const yCenter = 225;
+    const xLeft = 170;
+    const xRight = 830;
+
+    // Parties
+    drawActorPillar(xLeft, yCenter, sender, "user", "#4F46E5", "NOTIFIER");
+    drawActorPillar(xRight, yCenter, recipient, "user", "#DC2626", "RECIPIENT", progress > 0.6);
+
+    // Flying Stamped Airmail Envelope
+    const envX = (1 - progress) * (xLeft + 55) + progress * (xRight - 55);
+    const envY = yCenter - 45 - Math.sin(progress * Math.PI) * 40;
+
+    ctx.save();
+    ctx.shadowColor = "rgba(0, 0, 0, 0.15)";
+    ctx.shadowBlur = 12;
+
+    // Envelope Body
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = "#3B82F6";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.roundRect(envX - 32, envY - 20, 64, 40, 6);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Envelope Flap Lines
+    ctx.strokeStyle = "#94A3B8";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(envX - 32, envY - 20);
+    ctx.lineTo(envX, envY + 2);
+    ctx.lineTo(envX + 32, envY - 20);
+    ctx.stroke();
+
+    // Red Postal Stamp in Top-Right
+    ctx.fillStyle = "#DC2626";
+    ctx.beginPath();
+    ctx.roundRect(envX + 16, envY - 16, 12, 10, 2);
+    ctx.fill();
+
+    // Speed Trail Behind Envelope
+    ctx.strokeStyle = "rgba(79, 70, 229, 0.4)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(xLeft + 55, yCenter);
+    ctx.lineTo(envX - 35, envY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Expanding Registered AD Card upon Delivery
+    if (progress > 0.45) {
+      const adY = yCenter + 52;
+      ctx.fillStyle = "#ECFDF5";
+      ctx.strokeStyle = "#059669";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(500 - 180, adY, 360, 48, 8);
+      ctx.fill(); ctx.stroke();
+
+      ctx.fillStyle = "#047857";
+      ctx.font = "800 11px JetBrains Mono, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText(`📬 ${status.toUpperCase()}`, 500, adY + 20);
+
+      ctx.fillStyle = "#0F172A";
+      ctx.font = `700 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+      ctx.fillText(noticeType, 500, adY + 38);
+    }
+    ctx.restore();
+  }
+
+  // ============================================================
+  // ACTION 15: STATUTORY PENALTY FINE & REVENUE CHALLAN
+  // ============================================================
+  function drawPenaltyFineAction(payload, progress) {
+    const penaltyTitle = payload.penalty_title || "Statutory Penalty / Late Fee Assessment";
+    const amount = payload.amount || "₹1,00,000";
+    const reason = payload.reason || "Willful Default / Failure to Comply with Section";
+
+    const cx = 500, cy = 220;
+
+    ctx.save();
+    // Demand Challan Document
+    ctx.fillStyle = "#FFFFFF";
+    ctx.strokeStyle = "#DC2626";
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = "rgba(220, 38, 38, 0.2)";
+    ctx.shadowBlur = 18;
+    ctx.beginPath();
+    ctx.roundRect(cx - 200, cy - 80, 400, 160, 10);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowColor = "transparent";
+
+    // Top Red Warning Ribbon
+    ctx.fillStyle = "#FEE2E2";
+    ctx.strokeStyle = "#F87171";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(cx - 185, cy - 66, 370, 32, 6);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = "#991B1B";
+    ctx.font = "800 11px JetBrains Mono, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("⚠️ OFFICIAL STATUTORY REVENUE DEMAND NOTICE", cx, cy - 46);
+
+    // Fine Amount Digits (Rolling Counter Simulation)
+    ctx.fillStyle = "#DC2626";
+    ctx.font = `800 ${Math.round(28 * fontScale)}px JetBrains Mono, monospace`;
+    ctx.fillText(amount, cx, cy - 2);
+
+    // Reason Label
+    ctx.fillStyle = "#475569";
+    ctx.font = `600 ${Math.round(11.5 * fontScale)}px Plus Jakarta Sans, sans-serif`;
+    wrapCanvasText(ctx, penaltyTitle + " — " + reason, cx, cy + 26, 360, 16);
+
+    // Red Rubber Stamp of Non-Compliance
+    if (progress > 0.4) {
+      ctx.save();
+      ctx.translate(cx + 80, cy + 30);
+      ctx.rotate(-0.16);
+
+      ctx.strokeStyle = "#DC2626";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(-80, -18, 160, 36, 6);
+      ctx.stroke();
+
+      ctx.fillStyle = "#DC2626";
+      ctx.font = "900 12px JetBrains Mono, monospace";
+      ctx.textAlign = "center";
+      ctx.fillText("ASSESSED & LEVIED", 0, 5);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // ============================================================
+  // ACTION 16: WATERFALL FLOW DEDUCTION & QUANTUM COMPUTATION
+  // ============================================================
+  function drawWaterfallFlowAction(payload, progress) {
+    const steps = payload.steps || [
+      { label: "Agreed Contractual Value", amount: "₹10,00,000" },
+      { label: "Less: Mitigated Market Price", amount: "(-) ₹8,50,000" },
+      { label: "Net Recoverable Damages", amount: "(=) ₹1,50,000" }
+    ];
+
+    const startX = 140;
+    const startY = 150;
+    const stepW = 210;
+    const gap = 38;
+
+    ctx.save();
+    steps.forEach((st, i) => {
+      const sx = startX + i * (stepW + gap);
+      const sy = startY + i * 28;
+      const isHighlighted = progress >= (i + 1) / (steps.length + 0.3);
+
+      // Connecting Cascade Flow Arrows
+      if (i > 0) {
+        ctx.strokeStyle = "#94A3B8";
+        ctx.lineWidth = 2.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(sx - gap + 10, sy - 14);
+        ctx.lineTo(sx - 10, sy + 18);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Waterfall Step Card
+      ctx.fillStyle = i === steps.length - 1 ? "#ECFDF5" : (isHighlighted ? "#EEF2FF" : "#FFFFFF");
+      ctx.strokeStyle = i === steps.length - 1 ? "#059669" : (isHighlighted ? "#4F46E5" : "#E2E8F0");
+      ctx.lineWidth = isHighlighted ? 2.5 : 1.5;
+      ctx.beginPath();
+      ctx.roundRect(sx, sy, stepW, 68, 8);
+      ctx.fill(); ctx.stroke();
+
+      // Step Tag
+      ctx.fillStyle = i === steps.length - 1 ? "#047857" : (isHighlighted ? "#4338CA" : "#64748B");
+      ctx.font = "800 10.5px JetBrains Mono, monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`STEP ${i+1}: ${st.label.toUpperCase()}`, sx + 14, sy + 22);
+
+      // Amount
+      ctx.fillStyle = i === steps.length - 1 ? "#065F46" : "#0F172A";
+      ctx.font = `800 ${Math.round(16 * fontScale)}px JetBrains Mono, monospace`;
+      ctx.fillText(st.amount, sx + 14, sy + 50);
+    });
     ctx.restore();
   }
 

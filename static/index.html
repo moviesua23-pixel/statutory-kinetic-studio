@@ -11,7 +11,8 @@
   
   <link rel="stylesheet" href="/static/css/studio.css">
   
-  <!-- Vector Shapes & Layout Animation Libraries -->
+  <!-- Vector Shapes & Lottie Motion Animation Libraries -->
+  <script src="/static/js/vendor/lottie.min.js"></script>
   <script src="/static/js/colorful_shapes_library.js"></script>
   <script src="/static/js/presentation_player.js"></script>
   <script src="/static/js/studio.js"></script>
@@ -119,9 +120,10 @@
         <!-- Rendered dynamically based on generated scenes -->
       </div>
 
-      <!-- 1000x500 Kinetic Stage Canvas -->
-      <div class="canvas-wrapper">
+      <!-- 1000x500 Kinetic Stage Canvas with Overlaid Vector Lottie Layer -->
+      <div class="canvas-wrapper" style="position:relative; width:1000px; height:500px; margin:0 auto; overflow:hidden;">
         <canvas id="stage_canvas" width="1000" height="500" onclick="PRESENTATION_PLAYER.togglePlay()"></canvas>
+        <div id="lottie_overlay" style="position:absolute; inset:0; pointer-events:none; display:flex; align-items:center; justify-content:center; z-index:10;"></div>
       </div>
 
       <!-- Scene Narration Bar -->
@@ -130,10 +132,11 @@
           <div style="display:flex; align-items:center; gap:8px;">
             <span id="anim_phase_badge" class="badge-mono" style="background:#D97706; color:#FFFFFF;">📖 PHASE 1: STORY EXPOSITION</span>
             <span id="anim_tag_label" style="font-size:12px; font-weight:800; color:var(--text);">SCENE 1</span>
+            <span id="anim_layout_badge" class="badge-mono" style="background:#4F46E5; color:#FFFFFF; font-size:11px; padding:2px 8px;">🎭 HERO STAGE</span>
           </div>
           <div id="anim_story_ref" style="font-size:11.5px; font-weight:800; color:#B45309; display:none;"></div>
           <span style="font-size:11px; font-weight:700; color:#1E40AF; background:#EFF6FF; padding:3px 8px; border-radius:4px; border:1px solid #BFDBFE;">
-            ✨ Real-Time Kinetic Visual Composition
+            ✨ Premium Multi-Layout &amp; Kinetic Motion Engine
           </span>
         </div>
         <div class="narration-text" id="anim_narration_text">

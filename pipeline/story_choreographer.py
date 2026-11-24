@@ -16,73 +16,81 @@ DO NOT use static flashcards or identical boxes.
 For each scene, break down the narrative into 2 to 4 distinct sequential LINES (sentences ending in a full stop).
 For EVERY SINGLE LINE, you MUST detect the primary action verb and choose the matching "action_type" and populate its "action_payload":
 
-SUPPORTED KINETIC ACTION TYPES:
+SUPPORTED KINETIC ACTION TYPES (16 SPECIALIZED ENGINES):
 
-1. "money_transfer": Use when someone is paying money, transferring consideration, paying rent, giving an advance, or paying a fee.
-   - action_payload: {
-       "from_actor": "Mr. Murali (Tenant)", "from_icon": "user",
-       "to_actor": "Dr. Susan (Landlord)", "to_icon": "store",
-       "amount": "₹50,000", "description": "Monthly rent consideration paid for shop"
-     }
-   - Visual: Left actor, Right actor, and animated gold coins/notes physically traveling across the screen along a trajectory from A to B!
+1. "money_transfer": Payment of consideration, rent, fees, price, advance deposits.
+   - action_payload: {"from_actor": "Payer Name", "from_icon": "user", "to_actor": "Receiver Name", "to_icon": "store", "amount": "₹50,000", "description": "Consideration description"}
+   - Visual: Gold coins fly across screen along a curved Bezier trajectory into receiver's vault.
 
-2. "contract_sign": Use when an agreement, contract, deed, consent terms, or notice is executed, signed, or stamped.
-   - action_payload: {
-       "title": "Registered Lease Agreement",
-       "parties": "Mr. Murali & Dr. Susan",
-       "key_term": "Lawful object with mutual covenants",
-       "stamp_text": "EXECUTED & REGISTERED"
-     }
-   - Visual: A legal parchment expands, an animated pen draws a real-time signature, and an official wax seal stamps down with an impact bounce!
+2. "contract_sign": Executing agreement, deed, lease, contract, or written memo.
+   - action_payload: {"title": "Deed Title", "parties": "Party A & Party B", "key_term": "Core contractual term", "stamp_text": "SIGNED & REGISTERED"}
+   - Visual: Parchment unrolls, cursive quill signature traces live, wax seal stamps with impact bounce.
 
-3. "handshake_consent": Use when parties enter an agreement freely, give free consent without coercion, reach a consensus ad idem, or make mutual promises.
-   - action_payload: {
-       "party_a": "Promisor (Mr. Murali)", "party_b": "Promisee (Dr. Susan)",
-       "consent_rule": "Free Consent (Section 10)",
-       "status": "No Coercion, Fraud or Mistake"
-     }
-   - Visual: Two parties slide in from both sides, clasp hands in an animated handshake in center, and a radiant green verification shield blooms with sparkles!
+3. "handshake_consent": Offer & acceptance, free consent, consensus ad idem, bilateral pact.
+   - action_payload: {"party_a": "Promisor", "party_b": "Promisee", "consent_rule": "Free Consent (Section 10)", "status": "Valid Mutual Consent"}
+   - Visual: Two parties slide in from left & right, shake hands, green consent ripple shield blooms.
 
-4. "goods_transport": Use when goods, machinery, fleets, raw materials, or shipments are being delivered or transported.
-   - action_payload: {
-       "origin": "Kochi Garment Factory", "destination": "Thrissur Boutique",
-       "cargo": "Industrial Sewing Machines",
-       "status": "In Transit via Express Cargo"
-     }
-   - Visual: A cargo truck physically drives across an animated road from origin depot to destination warehouse!
+4. "goods_transport": Delivery of cargo, machinery, vehicles, inventory, or physical supply.
+   - action_payload: {"origin": "Origin Depot", "destination": "Destination Port", "cargo": "Machinery / Goods", "status": "In Transit"}
+   - Visual: Cargo truck drives along a highway with turning wheels between warehouses.
 
-5. "breach_block": Use when a contract is broken, delivery delayed, default occurs, accident happens, or a violation is detected.
-   - action_payload: {
-       "event_title": "Breach of Contract (Failure to Deliver)",
-       "cause": "Supplier truck delayed past agreed deadline",
-       "consequence": "Factory standstill & disputed loss"
-     }
-   - Visual: An animated pathway or contract pipeline cracks, an alert beacon flashes with expanding crimson ripple waves, and a hazard roadblock slams down!
+5. "breach_block": Contractual default, delivery failure, hazard alert, broken covenant, dispute.
+   - action_payload: {"event_title": "Breach of Contract", "cause": "Default reason", "consequence": "Direct business impact"}
+   - Visual: Roadway fractures, alert beacon flashes crimson ripples, roadblock barrier slams down.
 
-6. "balance_scale": Use when comparing two values, balancing ordinary damages vs remote losses, weighing safe-harbor limits, or assessing liability vs defense.
-   - action_payload: {
-       "left_weight": "Ordinary / Direct Loss (Recoverable)", "left_amount": "₹1,50,000",
-       "right_weight": "Remote / Indirect Loss (Excluded)", "right_amount": "₹10,00,000",
-       "verdict": "Scale Tilts: Only Natural Loss Allowed"
-     }
-   - Visual: A realistic mechanical balance scale drops weights onto Left and Right pans, tilting in real time to show which legal argument holds!
+6. "balance_scale": Balancing rights vs duties, ordinary vs remote losses, burden of proof, defenses.
+   - action_payload: {"left_weight": "Claim A / Ordinary Loss", "left_amount": "₹1,50,000", "right_weight": "Claim B / Remote Loss", "right_amount": "₹10,00,000", "verdict": "Scale Tilts: Only Natural Loss Allowed"}
+   - Visual: Mechanical balance beam oscillates with harmonic spring physics and tilts to the winning argument.
 
-7. "financial_meter": Use when illustrating business profit, loss, drop in revenue, statutory net tax, or damages quantification.
-   - action_payload: {
-       "metric_name": "Business Profit / Loss Trend",
-       "direction": "down", // "down" for loss, "up" for gain
-       "value": "(-) ₹3,00,000",
-       "detail": "Lost orders due to delayed machinery"
-     }
-   - Visual: An animated financial grid with a glowing line graph plunging downwards or climbing upwards in real time with gradient shading!
+7. "financial_meter": Business profits, losses, damages quantification, revenue impact.
+   - action_payload: {"metric_name": "Net Profit / Loss Impact", "direction": "down" or "up", "value": "(-) ₹3,00,000", "detail": "Quantified damage figure"}
+   - Visual: Coordinate axis grid with glowing curve dynamically graphing the financial trend.
 
-8. "gavel_verdict": Use for court rulings, judge's decisions, landmark precedents, or final statutory decrees.
-   - action_payload: {
-       "court_name": "Landmark Precedent",
-       "case_citation": "Hadley v. Baxendale / Supreme Court",
-       "ratio": "Damages only for natural consequences or communicated special loss"
-     }
-   - Visual: A wooden judge's gavel swings down through an arc, strikes the soundboard with shockwaves, and the legal decree scrolls out!
+8. "gavel_verdict": Judicial verdicts, landmark court rulings, final arbitrator award, ratio decidendi.
+   - action_payload: {"court_name": "Landmark Ratio", "case_citation": "Case Law Citation", "ratio": "Legal principle established"}
+   - Visual: Judge's mahogany gavel swings through arc, strikes soundblock with shockwaves, decree unrolls.
+
+9. "clock_limitation": Limitation periods, time is essence of contract, deadline expiry, statutory delays.
+   - action_payload: {"deadline_title": "Limitation Period / Time of Essence", "time_limit": "3 Years from Breach", "status": "Within Statutory Period / Barred by Limitation"}
+   - Visual: Metallic clock face with rotating second hand, swinging pendulum, and countdown urgency badge.
+
+10. "property_transfer": Real estate conveyance, title transfer, land parcel handover, possession of premises.
+    - action_payload: {"property_name": "Commercial Building / Land Parcel", "transferor": "Owner Name", "transferee": "Purchaser Name", "title_status": "Absolute Title Conveyed"}
+    - Visual: Architectural building silhouette, title deed, glowing golden key transferring with sparkle particles.
+
+11. "condition_checklist": Statutory essential ingredients, compliance criteria, 3-step or 4-step tests.
+    - action_payload: {"criteria": ["1. Competent Parties", "2. Free Consent", "3. Lawful Consideration", "4. Lawful Object"], "active_step": 2, "compliance_status": "All Conditions Fulfilled"}
+    - Visual: Elegant compliance board where checkmarks pop in with spring bounce as conditions are met.
+
+12. "lock_security": Security deposits, confidentiality, fraud protection, fiduciary protection, bank guarantee.
+    - action_payload: {"security_type": "Bank Guarantee / Non-Disclosure", "status": "Secured / Lock Engaged", "protection_scope": "Protects against unauthorized breach"}
+    - Visual: Heavy steel padlock with key turning, locking/unlocking with a glowing cyan cyber shield.
+
+13. "corporate_board": Corporate resolutions, board meetings, shareholder votes, company decisions.
+    - action_payload: {"company_name": "Corporate Entity", "resolution": "Ordinary / Special Resolution Passed", "voting_result": "85% Assent vs 15% Dissent"}
+    - Visual: Executive boardroom table with voting ballot cards and embossed corporate seal.
+
+14. "notice_dispatch": Serving legal notice, registered post with AD, demand letter, revocation telegram.
+    - action_payload: {"notice_type": "Notice of Termination / Revocation", "sender": "Party A", "recipient": "Party B", "delivery_status": "Speed Post Delivered with AD"}
+    - Visual: Stamped postal airmail envelope flying across screen with speed trail and unrolling AD card.
+
+15. "penalty_fine": Statutory fines, late fees, penalty notices, punitive damages, revenue demands.
+    - action_payload: {"penalty_title": "Statutory Penalty Under Section", "amount": "₹1,00,000", "reason": "Late Filing / Willful Default"}
+    - Visual: Demand challan document with animated rolling digits and red rubber stamp of non-compliance.
+
+16. "waterfall_flow": Sequential computation, statutory deductions, tax computation, damage calculation ladder.
+    - action_payload: {"steps": [{"label": "Agreed Contract Price", "amount": "₹10,00,000"}, {"label": "Minus: Market Price on Breach", "amount": "₹8,50,000"}, {"label": "Net Recoverable Damage", "amount": "₹1,50,000"}]}
+    - Visual: Descending waterfall blocks with mathematical subtraction arrows and highlighted net result.
+
+============================================================
+SUPPORTED SLIDE LAYOUT ARCHETYPES (5 DIVERSE LAYOUTS):
+============================================================
+Assign the most visually appropriate "layout_archetype" to each scene for maximum presentation variety:
+- "layout_hero_stage": Centered action stage with large focal simulation (Great for single dramatic events, trucks, money transfer, gavels).
+- "layout_bilateral_split": Dual-column split screen (Left: Party A, Right: Party B, Center: Exchange / Dispute). Perfect for contracts, proposals, negotiations, and disputes!
+- "layout_sequential_pipeline": Horizontal 3-step or 4-step pipeline connected by glowing conduits. (Great for lifecycle of a contract, breach progression, procedural steps).
+- "layout_quadrant_grid": 4-card matrix grid. (Great for statutory ingredients, 4 essential elements, 4 defenses).
+- "layout_precedent_parchment": Stately legal scroll layout with wax seal & citation ribbon. (Great for landmark case laws, court ratios, exam takeaways).
 
 ============================================================
 THE 2-PHASE SCREENPLAY PEDAGOGICAL FLOW
@@ -90,15 +98,15 @@ THE 2-PHASE SCREENPLAY PEDAGOGICAL FLOW
 
 PHASE 1: STORY EXPOSITION (Scenes 1 & 2)
 Vivid real-life characters and transactions demonstrating the provision.
-- Scene 1: Meeting & Agreement (uses "handshake_consent", "contract_sign", or "money_transfer").
-- Scene 2: The Turning Point / Event / Breach (uses "goods_transport", "breach_block", or "financial_meter").
+- Scene 1: Meeting & Agreement (uses "layout_bilateral_split" or "layout_hero_stage"; actions: "handshake_consent", "contract_sign", or "money_transfer").
+- Scene 2: The Turning Point / Event / Breach (uses "layout_sequential_pipeline" or "layout_hero_stage"; actions: "goods_transport", "breach_block", or "financial_meter").
 
 PHASE 2: STATUTORY BREAKDOWN (Scenes 3 to 5/6)
 Point-by-point legal deconstruction of the provision's exact words.
-- Scene 3: Primary Rule / Test (uses "balance_scale" or "condition_checklist").
-- Scene 4: Exceptions / Provisos (uses "breach_block" or "balance_scale").
-- Scene 5: Remedies / Quantum / Liability (uses "financial_quantum" or "financial_meter").
-- Scene 6: Landmark Precedent & Takeaways (uses "gavel_verdict").
+- Scene 3: Primary Rule / Essential Ingredients (uses "layout_quadrant_grid" or "layout_bilateral_split"; actions: "condition_checklist" or "balance_scale").
+- Scene 4: Exceptions / Defenses / Limitation (uses "layout_hero_stage"; actions: "clock_limitation", "breach_block", or "lock_security").
+- Scene 5: Remedies / Quantum / Waterfall Calculation (uses "layout_hero_stage" or "layout_sequential_pipeline"; actions: "waterfall_flow" or "financial_meter").
+- Scene 6: Landmark Precedent & Takeaways (uses "layout_precedent_parchment"; actions: "gavel_verdict").
 
 ============================================================
 AUDIO & VOICE PRONUNCIATION RULES
@@ -119,6 +127,7 @@ Return valid JSON matching this schema:
     {
       "id": 1,
       "screenplay_phase": "PHASE 1: STORY EXPOSITION",
+      "layout_archetype": "layout_bilateral_split",
       "story_point_ref": null,
       "tab_title": "1. Contractual Proposal & Agreement",
       "tag": "FACTUAL ORIGIN & CHARACTERS",

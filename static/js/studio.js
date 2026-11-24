@@ -79,13 +79,25 @@ function renderStoryReview(data) {
       box-shadow: 0 1px 4px rgba(15,23,42,0.06);
     `;
 
-    // Top Row: Phase Badge + Scene Title
+    // Top Row: Phase Badge + Scene Title + Layout Archetype
+    const layoutNames = {
+      "layout_bilateral_split": "👥 BILATERAL SPLIT",
+      "layout_sequential_pipeline": "⚡ PIPELINE FLOW",
+      "layout_quadrant_grid": "🧩 4-PILLAR GRID",
+      "layout_precedent_parchment": "📜 JUDICIAL RATIO",
+      "layout_hero_stage": "🎭 HERO STAGE"
+    };
+    const layoutBadgeText = layoutNames[sc.layout_archetype] || "🎭 HERO STAGE";
+
     const headerRow = document.createElement("div");
     headerRow.style.cssText = "display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;";
     headerRow.innerHTML = `
-      <div style="display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <span class="badge-mono" style="background:${isPhase1 ? '#D97706' : '#059669'}; color:#FFF; font-size:11px; padding:3px 9px;">
           ${isPhase1 ? '📖 PHASE 1: STORY EXPOSITION' : '⚖️ PHASE 2: STATUTORY BREAKDOWN'}
+        </span>
+        <span class="badge-mono" style="background:#4F46E5; color:#FFF; font-size:10.5px; padding:2px 8px;">
+          ${layoutBadgeText}
         </span>
         <span style="font-size:14px; font-weight:800; color:#0F172A;">
           Slide ${idx + 1}: ${sc.tab_title || sc.tag || `Slide ${idx+1}`}
