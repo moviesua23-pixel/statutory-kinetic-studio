@@ -6,6 +6,12 @@ import socketserver
 import time
 from urllib.parse import urlparse
 
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
 # Ensure local dir is in sys.path
 STUDIO_ROOT = os.path.dirname(os.path.abspath(__file__))
 if STUDIO_ROOT not in sys.path:
