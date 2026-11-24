@@ -12,6 +12,14 @@ class StatutoryStudioOrchestrator:
         self.static_audio_dir = static_audio_dir
         self.rotator = KeyRotator()
 
+    def generate_story_only(self, provision_text: str, topic_hint: Optional[str] = None) -> Dict[str, Any]:
+        """Step 1 Focus: Generates purely the 2-Phase Pedagogical Story Screenplay for any legal provision."""
+        return generate_story_screenplay(
+            rotator=self.rotator,
+            provision_text=provision_text,
+            topic_hint=topic_hint
+        )
+
     def process_provision(
         self,
         provision_text: str,
@@ -20,11 +28,11 @@ class StatutoryStudioOrchestrator:
         progress_callback: Optional[Callable[[str, int], None]] = None
     ) -> Dict[str, Any]:
         """
-        End-to-End Orchestration Pipeline:
+        Full End-to-End Orchestration Pipeline:
         1. Provision parsing & 2-Phase Pedagogical Story Generation
-        2. Gemini Expressive Voice TTS Audio Synthesis
+        2. Expressive Voice TTS Audio Synthesis
         3. Acoustic Voice Timing Analysis
-        4. Layout Archetype & Vector Shape Timing Synchronization
+        4. Layout & Shape Synchronization
         """
         def report(msg: str, step: int):
             print(f"[PIPELINE STEP {step}/4] {msg}", flush=True)
@@ -32,9 +40,8 @@ class StatutoryStudioOrchestrator:
                 progress_callback(msg, step)
 
         # STEP 1: 2-Phase Pedagogical Story Choreography
-        report("Generating 2-Phase Pedagogical Story Screenplay with Gemini 3...", 1)
-        presentation = generate_story_screenplay(
-            rotator=self.rotator,
+        report("Generating 2-Phase Pedagogical Story Screenplay with Gemini...", 1)
+        presentation = self.generate_story_only(
             provision_text=provision_text,
             topic_hint=topic_hint
         )

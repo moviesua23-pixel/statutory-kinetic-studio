@@ -120,7 +120,45 @@ class StudioHTTPHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        if parsed.path == '/api/generate_presentation':
+        if parsed.path == '/api/generate_story':
+            try:
+                content_len = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(content_len)
+                req_data = json.loads(body.decode('utf-8'))
+                
+                provision_text = req_data.get('provision_text', '').strip()
+                topic_hint = req_data.get('topic', '').strip()
+
+                if not provision_text:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'error': 'provision_text is required'}).encode('utf-8'))
+                    return
+
+                print(f"\n[STUDIO SERVER] Generating 2-Phase Story Screenplay for pasted provision...", flush=True)
+                result = orchestrator.generate_story_only(
+                    provision_text=provision_text,
+                    topic_hint=topic_hint
+                )
+
+                resp_bytes = json.dumps(result, ensure_ascii=False).encode('utf-8')
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Content-Length', str(len(resp_bytes)))
+                self.end_headers()
+                self.wfile.write(resp_bytes)
+                print(f"[STUDIO SERVER] 2-Phase Story Generated: {result.get('act_name')} - {result.get('section_code')}", flush=True)
+
+            except Exception as e:
+                print(f"[STUDIO SERVER ERROR] {e}", flush=True)
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            return
+
+        elif parsed.path == '/api/generate_presentation':
             try:
                 content_len = int(self.headers.get('Content-Length', 0))
                 body = self.rfile.read(content_len)
