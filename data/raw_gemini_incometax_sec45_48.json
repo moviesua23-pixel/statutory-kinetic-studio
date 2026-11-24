@@ -1,0 +1,252 @@
+{
+  "act_name": "Income-tax Act, 1961",
+  "section_code": "Section 45(1) read with Section 48",
+  "core_doctrine": "Computation of Capital Gains",
+  "story_summary": "Mr. Ravi sells his commercial property for ₹1.5 Crore and computes his taxable gains by deducting his original cost and sales expenses under Section 48.",
+  "scenes": [
+    {
+      "id": 1,
+      "screenplay_phase": "PHASE 1: STORY EXPOSITION",
+      "layout_archetype": "layout_bilateral_split",
+      "layout_payload": {
+        "left_label": "Mr. Ravi (Seller)",
+        "left_role": "Assessee / Transferor",
+        "right_label": "M/s Buildcon (Buyer)",
+        "right_role": "Transferee"
+      },
+      "story_point_ref": "Initial Agreement to Transfer Capital Asset",
+      "tab_title": "Asset Transfer Agreement",
+      "tag": "TRANSACTION ORIGIN",
+      "dialogue": "Mr. Ravi thante commercial property M/s Buildcon-inu vilkkan thirumanikkunnu. Ee Capital Asset transfer cheyyunnathinu vendi avar oru Sale Deed execute cheyyunnu.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "Mr. Ravi and Buildcon execute a formal agreement for the transfer of the commercial property.",
+          "line_title": "Execution of Transfer Deed",
+          "duration_ms": 4500,
+          "action_type": "contract_sign",
+          "action_payload": {
+            "title": "Sale Deed / Conveyance",
+            "parties": "Mr. Ravi & M/s Buildcon",
+            "key_term": "Transfer of Capital Asset",
+            "stamp_text": "EXECUTED",
+            "document_header": "OFFICIAL SALE INSTRUMENT"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "screenplay_phase": "PHASE 1: STORY EXPOSITION",
+      "layout_archetype": "layout_hero_stage",
+      "layout_payload": {
+        "hero_headline": "Full Value of Consideration",
+        "focal_element": "₹1,50,00,000"
+      },
+      "story_point_ref": "Receipt of Sale Consideration",
+      "tab_title": "Consideration Received",
+      "tag": "GROSS INFLOW",
+      "dialogue": "Property-ude vilayayi Buildcon 1.5 Crores Ravi-kku nalkunnu. Itineyaanu nammal Income Tax Act-il 'Full Value of Consideration' ennu vilikkunnath.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "Buildcon remits the gross consideration amount of ₹1,50,00,000 to Mr. Ravi.",
+          "line_title": "Gross Consideration Inflow",
+          "duration_ms": 4000,
+          "action_type": "money_transfer",
+          "action_payload": {
+            "from_actor": "M/s Buildcon",
+            "to_actor": "Mr. Ravi",
+            "amount": "₹1,50,00,000",
+            "numeric_value": 15000000,
+            "description": "Full Value of Consideration",
+            "from_action": "Remitting Purchase Price",
+            "settled_status": "CONSIDERATION TRANSFERRED"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_quadrant_grid",
+      "layout_payload": {
+        "quadrants": [
+          {
+            "title": "Capital Asset",
+            "body": "Commercial Property owned by the Assessee.",
+            "accent": "indigo"
+          },
+          {
+            "title": "Transfer",
+            "body": "Sale, exchange, or relinquishment of the asset.",
+            "accent": "emerald"
+          },
+          {
+            "title": "Previous Year",
+            "body": "Transfer must occur within the relevant financial year.",
+            "accent": "amber"
+          },
+          {
+            "title": "Profits/Gains",
+            "body": "Surplus arising from the transfer event.",
+            "accent": "crimson"
+          }
+        ]
+      },
+      "story_point_ref": "Section 45(1) Charging Section",
+      "tab_title": "Statutory Ingredients",
+      "tag": "CHARGING PROVISIONS",
+      "dialogue": "Section 45(1) prakaram Capital Gain charge cheyyanamengil naalu kaaryangal nirbandhamanu: oru Capital Asset undakanam, athu Transfer cheyyanam, athu Previous Year-il nadakkanam, athil ninnu Gains undakanam.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The transaction must satisfy all statutory conditions under Section 45(1) to be taxable.",
+          "line_title": "Condition Checklist",
+          "duration_ms": 5000,
+          "action_type": "condition_checklist",
+          "action_payload": {
+            "title": "Section 45(1) Mandatory Tests",
+            "conditions": [
+              {
+                "text": "Existence of Capital Asset",
+                "satisfied": true
+              },
+              {
+                "text": "Transfer of such Asset",
+                "satisfied": true
+              },
+              {
+                "text": "Effected in Previous Year",
+                "satisfied": true
+              },
+              {
+                "text": "Profit/Gain Arising",
+                "satisfied": true
+              }
+            ],
+            "verdict": "CHARGEABILITY TRIGGERED"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_sequential_pipeline",
+      "layout_payload": {
+        "stages": [
+          {
+            "label": "Gross Consideration",
+            "detail": "₹1,50,00,000 (FVC)"
+          },
+          {
+            "label": "Less: Transfer Expenses",
+            "detail": "₹5,00,000 (S. 48(i))"
+          },
+          {
+            "label": "Less: Cost of Acquisition",
+            "detail": "₹60,00,000 (S. 48(ii))"
+          }
+        ]
+      },
+      "story_point_ref": "Section 48 Computation Mode",
+      "tab_title": "Computation Logic",
+      "tag": "STATUTORY DEDUCTIONS",
+      "dialogue": "Section 48 parayunnu, nammude gross consideration-il ninnu transfer-inu vendi vannu chilavukalum asset vangiya vilayum (Cost of Acquisition) minus cheyyanam.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The statutory waterfall begins by deducting the expenditure incurred for the transfer.",
+          "line_title": "Applying Deductions",
+          "duration_ms": 5000,
+          "action_type": "waterfall_flow",
+          "action_payload": {
+            "waterfall_title": "Section 48 Deduction Flow",
+            "realized_corpus": "₹1,50,00,000",
+            "tiers": [
+              {
+                "label": "Transfer Expenditure (Legal/Brokerage)",
+                "amount": "₹5,00,000",
+                "settled": true
+              },
+              {
+                "label": "Cost of Acquisition (Original Purchase)",
+                "amount": "₹60,00,000",
+                "settled": true
+              },
+              {
+                "label": "Cost of Improvement",
+                "amount": "₹0",
+                "settled": false
+              }
+            ],
+            "status": "DEDUCTIONS APPLIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_hero_stage",
+      "layout_payload": {
+        "hero_headline": "Net Taxable Capital Gain",
+        "focal_element": "₹85,00,000"
+      },
+      "story_point_ref": "Final Quantum Determination",
+      "tab_title": "Taxable Gain Assessment",
+      "tag": "FINAL QUANTUM",
+      "dialogue": "Deductions ellam kazhinju varunna 85 Lakhs rupayaanu Ravi-ude Taxable Capital Gain.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The final computation results in a taxable capital gain of ₹85,00,000.",
+          "line_title": "Quantified Taxable Surplus",
+          "duration_ms": 4500,
+          "action_type": "financial_meter",
+          "action_payload": {
+            "title": "Taxable Capital Gain Result",
+            "numeric_value": 8500000,
+            "max_value": 15000000,
+            "min_value": 0,
+            "threshold": 0,
+            "direction": "gain",
+            "unit": "₹",
+            "status": "FINAL TAXABLE INCOME"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_precedent_parchment",
+      "layout_payload": {
+        "court": "STATUTORY SUMMARY",
+        "case_name": "Section 45 & 48 Compliance",
+        "year": "2024",
+        "ratio_headline": "Gains are taxable in the year of transfer after deducting Cost & Transfer expenses."
+      },
+      "story_point_ref": "Legal Takeaway",
+      "tab_title": "Legal Conclusion",
+      "tag": "JUDICIAL SUMMARY",
+      "dialogue": "Capital Asset transfer cheyyunna varsham thanne athile gains tax cheyyappedum. FVC-yil ninnu Cost of Acquisition-um Transfer Expenses-um kuraykkan Section 48 avakasham nalkunnu.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The court and statute affirm that only the real gain after cost recovery is subject to tax.",
+          "line_title": "Binding Legal Principle",
+          "duration_ms": 4000,
+          "action_type": "gavel_verdict",
+          "action_payload": {
+            "court_name": "Department of Revenue / ITAT",
+            "case_citation": "Section 48 Computation Rule",
+            "ratio": "Net gains computed by deducting acquisition cost and transfer expenses from full consideration.",
+            "badge": "LAW OF COMPUTATION"
+          }
+        }
+      ]
+    }
+  ]
+}

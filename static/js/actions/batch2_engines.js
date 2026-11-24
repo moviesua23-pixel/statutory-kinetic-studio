@@ -106,28 +106,20 @@
         arcColor = window.THEME.colors.accent.crimson.main;
         badgeTheme = window.THEME.colors.accent.crimson;
         badgeIcon = "alertTriangle";
-        defaultStatus = "STATUTORY LOSS / DEFICIT RECORDED";
+        defaultStatus = "STATUTORY LOSS COMPUTATION";
       } else if (direction === "gain") {
         arcColor = window.THEME.colors.accent.emerald.main;
         badgeTheme = window.THEME.colors.accent.emerald;
         badgeIcon = "trendingUp";
-        defaultStatus = "STATUTORY SURPLUS / QUANTUM SATISFIED";
+        defaultStatus = "STATUTORY QUANTUM COMPUTATION";
       } else if (hasThreshold) {
-        const isAbove = targetVal >= thresholdVal;
-        if (isAbove) {
-          arcColor = window.THEME.colors.accent.emerald.main;
-          badgeTheme = window.THEME.colors.accent.emerald;
-          badgeIcon = "checkCircle";
-          defaultStatus = "STATUTORY THRESHOLD EXCEEDED";
-        } else {
-          arcColor = window.THEME.colors.accent.indigo.main;
-          badgeTheme = window.THEME.colors.accent.indigo;
-          badgeIcon = "shield";
-          defaultStatus = "WITHIN STATUTORY LIMIT";
-        }
+        arcColor = window.THEME.colors.accent.indigo.main;
+        badgeTheme = window.THEME.colors.accent.indigo;
+        badgeIcon = "shield";
+        defaultStatus = "STATUTORY THRESHOLD COMPARISON";
       }
 
-      const statusText = payload.status || (hasData ? defaultStatus : "PENDING STATUTORY DETERMINATION");
+      const statusText = payload.status || (hasData ? defaultStatus : "Amount not specified");
 
       // Active Value Arc - Only drawn when data is present and progress > 0
       if (hasData && currentNorm > 0) {
@@ -180,7 +172,7 @@
 
         ctx.font = window.THEME.typography.caption;
         ctx.fillStyle = themeColors.textSecondary;
-        ctx.fillText("Quantum Data Awaiting Statutory Adjudication", gaugeCenterX, gaugeCenterY + 28);
+        ctx.fillText("Amount not specified", gaugeCenterX, gaugeCenterY + 28);
       }
 
       // Min / Max Labels at track bases
@@ -238,7 +230,7 @@
         if (ratio >= 1.0) isBarred = true;
       }
 
-      const verdict = payload.verdict || (isBarred ? "TIME-BARRED: REMEDY EXTINGUISHED" : "TIMELY INSTITUTION: ENFORCEABLE");
+      const verdict = payload.verdict || (isBarred ? "LIMITATION PERIOD LAPSED" : "LIMITATION PERIOD COMPUTED");
 
       const clockR = Math.min(100, bounds.h * 0.28);
       const clockX = bounds.x + bounds.w * 0.28;
@@ -384,7 +376,7 @@
       const transferee = payload.transferee || "Transferee Entity";
       const propertyDesc = payload.property_desc || "Commercial Immovable Asset";
       const deedText = payload.deed_title || payload.instrument || "Registered Instrument";
-      const statusText = payload.status || "TITLE CONVEYED";
+      const statusText = payload.status || "CONVEYANCE INSTRUMENT EXECUTED";
 
       const stationW = Math.min(220, bounds.w * 0.26);
       const stationH = 120;
@@ -472,7 +464,7 @@
 
       ctx.font = window.THEME.typography.caption;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText(payload.transferor_role || "Relinquishing Title", leftX + 24, stationY + 74);
+      ctx.fillText(payload.transferor_role || "Transferor Entity", leftX + 24, stationY + 74);
 
       // 3. Transferee Card (Right)
       window.SHARED_DRAW.card(ctx, rightX, stationY, stationW, stationH, {
@@ -494,7 +486,7 @@
 
       ctx.font = window.THEME.typography.caption;
       ctx.fillStyle = themeColors.textSecondary;
-      ctx.fillText(payload.transferee_role || "Vesting Legal Estate", rightX + 24, stationY + 74);
+      ctx.fillText(payload.transferee_role || "Transferee Entity", rightX + 24, stationY + 74);
 
       // 4. Trajectory Arc & Key Transfer
       const proj = window.SHARED_DRAW.trajectoryArc(ctx, startX, startY, endX, endY, -60, keyT, window.THEME.colors.accent.amber.main);
@@ -568,7 +560,7 @@
         ];
       }
       const n = conditions.length;
-      const verdict = payload.verdict || (`ALL ${n} STATUTORY CONDITIONS SATISFIED`);
+      const verdict = payload.verdict || (`ALL ${n} STATUTORY CONDITIONS EVALUATED`);
 
       const boardW = Math.min(640, bounds.w * 0.85);
       const boardH = Math.min(360, bounds.h * 0.90);

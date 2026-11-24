@@ -1,0 +1,269 @@
+{
+  "act_name": "Indian Contract Act, 1872",
+  "section_code": "Section 73",
+  "core_doctrine": "Compensation for Loss or Damage Caused by Breach",
+  "story_summary": "A factory owner suffers ₹2,00,000 in idle-time losses after a machinery supplier fails to deliver on time, triggering the rules of natural vs. remote damages.",
+  "scenes": [
+    {
+      "id": 1,
+      "screenplay_phase": "PHASE 1: STORY EXPOSITION",
+      "layout_archetype": "layout_bilateral_split",
+      "layout_payload": {
+        "left_label": "Mr. Rajesh (Buyer)",
+        "left_role": "Factory Owner & Promisee",
+        "right_label": "SuperMech Ltd (Seller)",
+        "right_role": "Industrial Supplier & Promisor"
+      },
+      "story_point_ref": "Formation of Contract",
+      "tab_title": "1. Contractual Accord",
+      "tag": "TRANSACTION ORIGIN",
+      "dialogue": "Namaskaram! Nammal innu padikkan pokunnath Section 73 aanu. Mr. Rajesh thante factory-ilekku puthiya machinery supply cheyyan vendi SuperMech Ltd-umayi oru agreement-il elpetu. Ee contract prakaram machinery krithyam samayathu delivery cheyyanam ennu vyakthamayi paranjittundu.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "Mr. Rajesh enters into a formal Commercial Supply Agreement with SuperMech Ltd for industrial machinery.",
+          "line_title": "Execution of Contract",
+          "duration_ms": 5000,
+          "action_type": "contract_sign",
+          "action_payload": {
+            "title": "Industrial Machinery Supply Contract",
+            "parties": "Mr. Rajesh & SuperMech Ltd",
+            "key_term": "Stipulated Delivery Date: 1st October",
+            "stamp_text": "VALID AGREEMENT",
+            "document_header": "PURCHASE INSTRUMENT"
+          }
+        },
+        {
+          "line_num": 2,
+          "sentence": "Both parties expressed Free Consent and consensus on the terms of the machinery specifications.",
+          "line_title": "Bilateral Accord",
+          "duration_ms": 4000,
+          "action_type": "handshake_consent",
+          "action_payload": {
+            "party_a": "Mr. Rajesh",
+            "party_b": "SuperMech Ltd",
+            "consent_rule": "Section 10 Compliance",
+            "status": "CONSENSUS AD IDEM",
+            "party_a_role": "Buyer",
+            "party_b_role": "Supplier"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "screenplay_phase": "PHASE 1: STORY EXPOSITION",
+      "layout_archetype": "layout_sequential_pipeline",
+      "layout_payload": {
+        "stages": [
+          {
+            "label": "1. Delivery Deadline",
+            "detail": "Contractual delivery date passes"
+          },
+          {
+            "label": "2. Contractual Breach",
+            "detail": "SuperMech fails to deliver machinery"
+          },
+          {
+            "label": "3. Direct Consequence",
+            "detail": "Factory operations stop completely"
+          }
+        ]
+      },
+      "story_point_ref": "The Breach Event",
+      "tab_title": "2. Default & Impact",
+      "tag": "BREACH OF CONTRACT",
+      "dialogue": "Pakshe, SuperMech krithyam samayathu machinery deliver cheythilla. Ithumoolam factory-ile production thadanju. Direct result ayi factory idle time moolam Rajesh-inu ₹2,00,000 nashtam sambhavichu. Ithanu nammude Breach of Contract.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The supplier defaulted on the delivery, causing an immediate halt in factory production.",
+          "line_title": "Operational Breach",
+          "duration_ms": 5000,
+          "action_type": "breach_block",
+          "action_payload": {
+            "event_title": "Default in Delivery",
+            "cause": "Failure to deliver machinery per schedule",
+            "consequence": "Operational Shutdown of Factory"
+          }
+        },
+        {
+          "line_num": 2,
+          "sentence": "Due to this breach, Mr. Rajesh suffered a quantified direct loss of ₹2,00,000 for factory idle time.",
+          "line_title": "Quantified Direct Loss",
+          "duration_ms": 5000,
+          "action_type": "financial_meter",
+          "action_payload": {
+            "title": "Direct Factory Loss",
+            "numeric_value": 200000,
+            "max_value": 500000,
+            "min_value": 0,
+            "threshold": 100000,
+            "direction": "loss",
+            "unit": "₹",
+            "status": "STATUTORY LOSS CALCULATED"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_quadrant_grid",
+      "layout_payload": {
+        "quadrants": [
+          {
+            "title": "Natural Losses",
+            "body": "Losses that naturally arose in the usual course of things.",
+            "accent": "indigo"
+          },
+          {
+            "title": "Known Losses",
+            "body": "Losses known to parties when making the contract.",
+            "accent": "emerald"
+          },
+          {
+            "title": "No Remote Loss",
+            "body": "Compensation is NOT given for indirect or remote damages.",
+            "accent": "crimson"
+          },
+          {
+            "title": "Duty to Mitigate",
+            "body": "Must take steps to remedy the inconvenience caused.",
+            "accent": "amber"
+          }
+        ]
+      },
+      "story_point_ref": "Section 73 Core Analysis",
+      "tab_title": "3. The Rule of Section 73",
+      "tag": "STATUTORY INGREDIENTS",
+      "dialogue": "Ini namukku Section 73-inte niyamangal nokkam. Oru contract break cheythal, compensation kittan 4 main conditions undu. Onnu, nashtam 'naturally arose' aayirikkanam. Allenkil parties-inu munkootti ariyunna 'likely result' aayirikkanam. Remote aaya nashtangal kuttan pattilla.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "Section 73 mandates that only losses arising naturally in the usual course are recoverable.",
+          "line_title": "Essential Ingredients",
+          "duration_ms": 6000,
+          "action_type": "condition_checklist",
+          "action_payload": {
+            "title": "Rule of Remoteness Test",
+            "conditions": [
+              {
+                "text": "1. Natural Loss (Usual Course)",
+                "satisfied": true
+              },
+              {
+                "text": "2. Contemplated by Parties",
+                "satisfied": true
+              },
+              {
+                "text": "3. Not Remote/Indirect",
+                "satisfied": true
+              },
+              {
+                "text": "4. Mitigation of Loss",
+                "satisfied": true
+              }
+            ],
+            "verdict": "STATUTORY TEST APPLIED"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_hero_stage",
+      "layout_payload": {
+        "hero_headline": "Direct vs. Remote Damages",
+        "focal_element": "The Test of Proximity"
+      },
+      "story_point_ref": "Exclusion of Remote Losses",
+      "tab_title": "4. Remote Damages Bar",
+      "tag": "LEGAL RESTRICTION",
+      "dialogue": "Ivide factory idle time nashtam direct nashtamanu, athu kittum. Pakshe ee machinery vannirunnenkil vere oru export order kitti valiya labham undakumayirunnu ennu Rajesh paranjaal, athu 'remote loss' aanu. Section 73 anganulla remote nashtangale support cheyyilla.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The law balances direct losses from the breach against unpredictable, remote consequential damages.",
+          "line_title": "Balancing Recoverability",
+          "duration_ms": 6000,
+          "action_type": "balance_scale",
+          "action_payload": {
+            "left_weight": "Direct Loss (Idle Time)",
+            "left_amount": "₹2,00,000",
+            "right_weight": "Remote Loss (Speculative Profit)",
+            "right_amount": "₹10,00,000",
+            "verdict": "ONLY DIRECT LOSS ALLOWED"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_hero_stage",
+      "layout_payload": {
+        "hero_headline": "Duty to Mitigate Loss",
+        "focal_element": "Remedying Inconvenience"
+      },
+      "story_point_ref": "Duty to Mitigate",
+      "tab_title": "5. Mitigation Rule",
+      "tag": "PLAINTIFF'S OBLIGATION",
+      "dialogue": "Section 73-ile ettavum pradhanappetta oru karyam 'Mitigation' aanu. Contract break cheythal nashtam kuraykkanulla ellam vazhikalum Mr. Rajesh nokkanam. Kayyil ulla options upayogichu nashtam minimse cheythillel court compensation kuraykkum.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "In estimating the loss, the court accounts for the means which existed of remedying the inconvenience.",
+          "line_title": "Mitigation Assessment",
+          "duration_ms": 6000,
+          "action_type": "condition_checklist",
+          "action_payload": {
+            "title": "Mitigation Test",
+            "conditions": [
+              {
+                "text": "Alternative source available?",
+                "satisfied": false
+              },
+              {
+                "text": "Steps taken to minimize loss?",
+                "satisfied": true
+              }
+            ],
+            "verdict": "MITIGATION EFFORTS RECORDED"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_precedent_parchment",
+      "layout_payload": {
+        "court": "COURT OF EXCHEQUER (ENGLISH PRECEDENT)",
+        "case_name": "Hadley v. Baxendale (1854)",
+        "year": "1854",
+        "ratio_headline": "The Foundation of Section 73"
+      },
+      "story_point_ref": "Landmark Precedent",
+      "tab_title": "6. Judicial Ratio",
+      "tag": "LANDMARK CASE",
+      "dialogue": "Section 73-inte mooladhara case 'Hadley v. Baxendale' aanu. Ee case-ilaanu first time 'Natural' and 'Contemplated' damages enna concept konduvannathu. Indian Contract Act Section 73 poornamaayum ee ratio base cheythulla aanu.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The court held that damages are only recoverable if they are natural or within the contemplation of the parties.",
+          "line_title": "Judicial Pronouncement",
+          "duration_ms": 6000,
+          "action_type": "gavel_verdict",
+          "action_payload": {
+            "court_name": "Court of Exchequer",
+            "case_citation": "Hadley v. Baxendale [1854] 9 Exch 341",
+            "ratio": "Damages should be those which may fairly and reasonably be considered as arising naturally from such breach.",
+            "badge": "RULE OF REMOTENESS"
+          }
+        }
+      ]
+    }
+  ]
+}

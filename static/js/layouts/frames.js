@@ -145,8 +145,10 @@
     /**
      * 2. SEQUENTIAL PIPELINE
      * Reads: stages[] (array of 2-5 items: { label, detail, status })
+     * Highlights active stage matching activeLineIdx.
+     * Minimum font size 12px logical with 2-line word wrapping and >= 14px card edge padding.
      */
-    layout_sequential_pipeline(ctx, payload = {}, rect, progress, themeColors) {
+    layout_sequential_pipeline(ctx, payload = {}, rect, progress, themeColors, activeLineIdx = 0) {
       const enterT = window.TWEEN.ease.easeOutCubic(progress);
       const stages = payload.stages || [
         { label: "1. Inception", detail: "Mutual Intention Formed" },
@@ -155,10 +157,11 @@
       ];
 
       const n = stages.length;
-      const stepW = Math.min(220, (rect.w - 100) / n);
-      const totalW = n * stepW + (n - 1) * 30;
+      const stepW = Math.min(240, (rect.w - 100) / n);
+      const totalW = n * stepW + (n - 1) * 24;
       const startX = rect.x + (rect.w - totalW) / 2;
-      const conduitY = rect.y + 70;
+      const conduitY = rect.y + 60;
+      const activeStageIdx = Math.min(stages.length - 1, Math.max(0, activeLineIdx));
 
       ctx.save();
       ctx.globalAlpha = enterT;
@@ -173,40 +176,96 @@
 
       // Stages
       stages.forEach((st, idx) => {
-        const x = startX + idx * (stepW + 30);
-        const cardH = 80;
+        const x = startX + idx * (stepW + 24);
+        const cardH = 92;
+        const cardY = conduitY + 22;
+        const isActive = idx === activeStageIdx;
+        const isPast = idx < activeStageIdx;
 
         // Node Circle on Conduit
-        ctx.fillStyle = idx === 0 ? window.THEME.colors.accent.indigo.main : themeColors.bgCard;
-        ctx.strokeStyle = window.THEME.colors.accent.indigo.main;
-        ctx.lineWidth = window.THEME.strokeWidth;
         ctx.beginPath();
-        ctx.arc(x + stepW / 2, conduitY, 12, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
+        ctx.arc(x + stepW / 2, conduitY, 13, 0, Math.PI * 2);
+        if (isActive) {
+          ctx.fillStyle = window.THEME.colors.accent.indigo.main;
+          ctx.fill();
+          ctx.strokeStyle = window.THEME.colors.accent.indigo.border;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        } else if (isPast) {
+          ctx.fillStyle = window.THEME.colors.accent.emerald.main;
+          ctx.fill();
+          ctx.strokeStyle = window.THEME.colors.accent.emerald.border;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = themeColors.bgCard;
+          ctx.fill();
+          ctx.strokeStyle = themeColors.border;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
 
         ctx.font = window.THEME.typography.monoBadge;
-        ctx.fillStyle = idx === 0 ? "#FFFFFF" : window.THEME.colors.accent.indigo.main;
+        ctx.fillStyle = (isActive || isPast) ? "#FFFFFF" : themeColors.textMuted;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(String(idx + 1), x + stepW / 2, conduitY);
 
         // Stage Card
-        const cardY = conduitY + 24;
-        ctx.fillStyle = themeColors.bgCard;
-        ctx.strokeStyle = themeColors.border;
+        const isDark = window.THEME && window.THEME.mode === "dark";
+        const cardFill = isActive
+          ? (isDark ? "rgba(99, 102, 241, 0.14)" : "rgba(99, 102, 241, 0.06)")
+          : themeColors.bgCard;
+        const cardStroke = isActive
+          ? window.THEME.colors.accent.indigo.main
+          : (isPast ? window.THEME.colors.accent.emerald.border : themeColors.border);
+
+        ctx.fillStyle = cardFill;
+        ctx.strokeStyle = cardStroke;
+        ctx.lineWidth = isActive ? 2 : 1;
         ctx.beginPath();
         ctx.roundRect(x, cardY, stepW, cardH, window.THEME.radii.md);
         ctx.fill();
         ctx.stroke();
 
-        ctx.font = window.THEME.typography.bodyBold;
-        ctx.fillStyle = themeColors.textPrimary;
-        ctx.fillText(st.label || `Stage ${idx + 1}`, x + stepW / 2, cardY + 24);
+        // Stage Label
+        ctx.font = isActive ? "700 13px 'Plus Jakarta Sans', sans-serif" : window.THEME.typography.bodyBold;
+        ctx.fillStyle = isActive ? window.THEME.colors.accent.indigo.main : themeColors.textPrimary;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(st.label || `Stage ${idx + 1}`, x + stepW / 2, cardY + 22);
 
-        ctx.font = window.THEME.typography.caption;
-        ctx.fillStyle = themeColors.textSecondary;
-        ctx.fillText(st.detail || "", x + stepW / 2, cardY + 50);
+        // Stage Description - Padded by >= 14px on both sides, wrapped to max 2 lines, min 12px logical font
+        const maxTextW = stepW - 28;
+        ctx.font = "500 12px 'Plus Jakarta Sans', sans-serif";
+        ctx.fillStyle = isActive ? themeColors.textPrimary : themeColors.textSecondary;
+
+        const words = (st.detail || "").split(" ");
+        let l1 = "", l2 = "";
+        for (let w of words) {
+          let test1 = l1 ? (l1 + " " + w) : w;
+          if (ctx.measureText(test1).width <= maxTextW && !l2) {
+            l1 = test1;
+          } else {
+            let test2 = l2 ? (l2 + " " + w) : w;
+            if (ctx.measureText(test2).width <= maxTextW) {
+              l2 = test2;
+            } else {
+              while (l2.length > 3 && ctx.measureText(l2 + "…").width > maxTextW) {
+                l2 = l2.slice(0, -1);
+              }
+              l2 += "…";
+              break;
+            }
+          }
+        }
+
+        if (l2) {
+          ctx.fillText(l1, x + stepW / 2, cardY + 50);
+          ctx.fillText(l2, x + stepW / 2, cardY + 70);
+        } else {
+          ctx.fillText(l1, x + stepW / 2, cardY + 58);
+        }
       });
 
       ctx.restore();
@@ -214,9 +273,9 @@
       // Return action stage below pipeline
       return {
         x: rect.x + 40,
-        y: conduitY + 120,
+        y: conduitY + 128,
         w: rect.w - 80,
-        h: rect.h - 190
+        h: rect.h - 176
       };
     },
 
@@ -399,9 +458,9 @@
   };
 
   const LAYOUT_FRAMES = {
-    render(ctx, archetype, payload, mainStageRect, progress, themeColors) {
+    render(ctx, archetype, payload, mainStageRect, progress, themeColors, activeLineIdx = 0) {
       const renderer = FRAMES[archetype] || FRAMES["layout_hero_stage"];
-      return renderer(ctx, payload, mainStageRect, progress, themeColors);
+      return renderer(ctx, payload, mainStageRect, progress, themeColors, activeLineIdx);
     }
   };
 

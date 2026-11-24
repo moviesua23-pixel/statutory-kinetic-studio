@@ -22,6 +22,7 @@
       this.lastTimestamp = performance.now();
       this.animationFrameId = null;
       this.sceneGraph = new window.KeyedActorSceneGraph();
+      this.lastRenderedSlideIdx = null;
       this.resizeObserver = null;
       this.isExporting = false;
 
@@ -208,6 +209,11 @@
       const slide = this.data.scenes[slideIdx];
       if (!slide) return;
 
+      if (this.lastRenderedSlideIdx !== slideIdx) {
+        this.lastRenderedSlideIdx = slideIdx;
+        this.sceneGraph.reset();
+      }
+
       const themeColors = window.THEME.getThemeColors();
       const lines = slide.lines || [];
       const totalLines = Math.max(1, lines.length);
@@ -279,27 +285,74 @@
         layoutPayload,
         mainStageRect,
         phaseState.enterT,
-        themeColors
+        themeColors,
+        activeLineIdx
       );
 
       // 4. Render Kinetic Action Engine into designated actionBounds
-      const actionType = activeLine.action_type || "money_transfer";
+      const actionType = activeLine.action_type || "neutral_action";
       const actionPayload = activeLine.action_payload || {};
 
-      const engineFn = (window.ACTION_ENGINES && window.ACTION_ENGINES[actionType]) ||
-                       (window.PILOT_ENGINES && window.PILOT_ENGINES[actionType]);
+      let engineFn = (window.ACTION_ENGINES && window.ACTION_ENGINES[actionType]) ||
+                     (window.PILOT_ENGINES && window.PILOT_ENGINES[actionType]);
 
-      if (engineFn) {
-        engineFn(
-          ctx,
-          actionPayload,
-          actionBounds || mainStageRect,
-          phaseState,
-          themeColors,
-          this.sceneGraph,
-          activeLineIdx
-        );
+      if (!engineFn) {
+        console.warn(`[PLAYER] Unknown action_type "${actionType}". Rendering neutral fallback card.`);
+        engineFn = function renderNeutralFallback(c, pld, bnds, pState, tColors) {
+          const cardW = Math.min(560, bnds.w * 0.75);
+          const cardH = Math.min(220, bnds.h * 0.70);
+          const cardX = bnds.x + (bnds.w - cardW) / 2;
+          const cardY = bnds.y + (bnds.h - cardH) / 2;
+
+          c.save();
+          window.SHARED_DRAW.card(c, cardX, cardY, cardW, cardH, {
+            fill: tColors.bgCard,
+            stroke: tColors.borderStrong,
+            radius: window.THEME.radii.lg
+          });
+
+          // Top Header Banner
+          c.fillStyle = window.THEME.colors.accent.indigo.light;
+          c.beginPath();
+          c.roundRect(cardX, cardY, cardW, 44, [window.THEME.radii.lg, window.THEME.radii.lg, 0, 0]);
+          c.fill();
+          c.stroke();
+
+          window.ICONS.draw(c, "fileText", cardX + 24, cardY + 22, 20, window.THEME.colors.accent.indigo.main);
+
+          c.font = window.THEME.typography.monoBadge;
+          c.fillStyle = window.THEME.colors.accent.indigo.dark;
+          c.textAlign = "left";
+          c.textBaseline = "middle";
+          const headerTitle = (pld.title || actionType.replace(/_/g, " ")).toUpperCase();
+          c.fillText(headerTitle, cardX + 44, cardY + 22);
+
+          // Body Text
+          c.font = window.THEME.typography.body;
+          c.fillStyle = tColors.textPrimary;
+          const bodyText = pld.description || pld.detail || "Action visualization pending statutory specification";
+          c.fillText(bodyText, cardX + 24, cardY + 80);
+
+          // Action-naming bottom pill
+          window.SHARED_DRAW.pill(c, (pld.status || "ACTION NOT SPECIFIED").toUpperCase(), cardX + 24, cardY + cardH - 40, {
+            fill: tColors.bgSubtle,
+            textFill: tColors.textSecondary,
+            stroke: tColors.border,
+            icon: "shield"
+          });
+          c.restore();
+        };
       }
+
+      engineFn(
+        ctx,
+        actionPayload,
+        actionBounds || mainStageRect,
+        phaseState,
+        themeColors,
+        this.sceneGraph,
+        activeLineIdx
+      );
 
       // 5. Render Caption Region (x: 48, y: 592, w: 1184, h: 96)
       window.SCAFFOLD.drawCaption(

@@ -1,0 +1,31 @@
+{
+  "statutes": [
+    {
+      "id": "contract_act_sec73",
+      "name": "Indian Contract Act, 1872",
+      "section": "Section 73",
+      "scenes_count": 6,
+      "raw_json_file": "data/raw_gemini_contract_act_sec73.json",
+      "missing_fields_filled_by_validator": 0,
+      "details": []
+    },
+    {
+      "id": "incometax_sec45_48",
+      "name": "Income Tax Act, 1961",
+      "section": "Section 45 read with Section 48",
+      "scenes_count": 6,
+      "raw_json_file": "data/raw_gemini_incometax_sec45_48.json",
+      "missing_fields_filled_by_validator": 0,
+      "details": []
+    },
+    {
+      "id": "cgst_sec16",
+      "name": "Central Goods and Services Tax Act, 2017",
+      "section": "Section 16",
+      "scenes_count": 5,
+      "raw_json_file": "data/raw_gemini_cgst_sec16.json",
+      "missing_fields_filled_by_validator": 0,
+      "details": []
+    }
+  ]
+}

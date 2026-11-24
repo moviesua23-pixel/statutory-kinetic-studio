@@ -12,12 +12,13 @@ class StatutoryStudioOrchestrator:
         self.static_audio_dir = static_audio_dir
         self.rotator = KeyRotator()
 
-    def generate_story_only(self, provision_text: str, topic_hint: Optional[str] = None) -> Dict[str, Any]:
+    def generate_story_only(self, provision_text: str, topic_hint: Optional[str] = None, raw_json_save_path: Optional[str] = None) -> Dict[str, Any]:
         """Step 1 Focus: Generates purely the 2-Phase Pedagogical Story Screenplay for any legal provision."""
         return generate_story_screenplay(
             rotator=self.rotator,
             provision_text=provision_text,
-            topic_hint=topic_hint
+            topic_hint=topic_hint,
+            raw_json_save_path=raw_json_save_path
         )
 
     def process_provision(

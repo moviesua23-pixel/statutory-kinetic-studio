@@ -90,7 +90,7 @@
 
       // Status under Receiver: Counts up or shows "Received"
       if (isSettle) {
-        window.SHARED_DRAW.pill(ctx, payload.settled_status || "RECEIVED & CREDITED", rightX + 24, cardY + 64, {
+        window.SHARED_DRAW.pill(ctx, payload.settled_status || "PAYMENT TRANSMITTED", rightX + 24, cardY + 64, {
           fill: window.THEME.colors.accent.emerald.light,
           textFill: window.THEME.colors.accent.emerald.main,
           stroke: window.THEME.colors.accent.emerald.border,
@@ -186,7 +186,7 @@
       const leftAmount = window.SHARED_DRAW ? window.SHARED_DRAW.formatIndianCurrency(payload.left_amount || "₹1,50,000") : (payload.left_amount || "₹1,50,000");
       const rightWeight = payload.right_weight || "Opposing Claim / Statutory Deduction";
       const rightAmount = window.SHARED_DRAW ? window.SHARED_DRAW.formatIndianCurrency(payload.right_amount || "₹10,00,000") : (payload.right_amount || "₹10,00,000");
-      const verdict = payload.verdict || "Statutory Balance of Considerations Established";
+      const verdict = payload.verdict || "STATUTORY BALANCE EVALUATED";
 
       const centerX = bounds.x + bounds.w / 2;
       const centerY = bounds.y + bounds.h * 0.44;
@@ -555,7 +555,7 @@
       // Ratio Decidendi text
       ctx.font = window.THEME.typography.captionBold;
       ctx.fillStyle = window.THEME.colors.accent.indigo.main;
-      ctx.fillText("BINDING LEGAL RATIO:", decreeX + 24, decreeY + 138);
+      ctx.fillText(payload.ratio_label || "STATUTORY LEGAL RATIO:", decreeX + 24, decreeY + 138);
 
       ctx.font = window.THEME.typography.body;
       ctx.fillStyle = themeColors.textSecondary;
@@ -578,7 +578,7 @@
       if (line) ctx.fillText(line, decreeX + 24, lineY);
 
       // Valid stamp badge
-      window.SHARED_DRAW.pill(ctx, payload.badge || "FINAL & BINDING", decreeX + 24, decreeY + decreeH - 34, {
+      window.SHARED_DRAW.pill(ctx, payload.badge || "JUDICIAL RATIO", decreeX + 24, decreeY + decreeH - 34, {
         fill: window.THEME.colors.accent.emerald.light,
         textFill: window.THEME.colors.accent.emerald.main,
         stroke: window.THEME.colors.accent.emerald.border,

@@ -22,11 +22,11 @@
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
       const isReduced = window.THEME.prefersReducedMotion();
 
-      const title = payload.title || payload.security_type || "Statutory Security Guarantee";
+      const title = payload.title || payload.security_type || "Security Instrument";
       const amountStr = payload.amount ? window.SHARED_DRAW.formatIndianCurrency(payload.amount) : "";
-      const obligor = payload.obligor || "Obligor / Contractor";
-      const beneficiary = payload.beneficiary || "Beneficiary / Government";
-      const statusText = payload.status || "STATUTORILY SECURED & ENFORCEABLE";
+      const obligor = payload.obligor || "First Party";
+      const beneficiary = payload.beneficiary || "Second Party";
+      const statusText = payload.status || "SECURITY INSTRUMENT RECORDED";
 
       const cardW = Math.min(620, bounds.w * 0.85);
       const cardH = Math.min(350, bounds.h * 0.90);
@@ -181,15 +181,15 @@
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
       const isReduced = window.THEME.prefersReducedMotion();
 
-      const company = payload.company_name || "Corporate Board of Directors";
-      const resolution = payload.resolution_title || "Special Resolution under Companies Act";
+      const company = payload.company_name || "Governing Body";
+      const resolution = payload.resolution_title || "Proposed Resolution";
       const votesFor = Number(payload.votes_for ?? 85);
       const votesAgainst = Number(payload.votes_against ?? 15);
       const totalVotes = votesFor + votesAgainst || 100;
       const pctFor = Math.round((votesFor / totalVotes) * 100);
       const reqThreshold = Number(payload.required_threshold ?? 75); // 75% for special, 51% for ordinary
       const isPassed = pctFor >= reqThreshold;
-      const statusText = payload.status || (isPassed ? `SPECIAL RESOLUTION PASSED (${pctFor}% ASSENT)` : "RESOLUTION REJECTED");
+      const statusText = payload.status || "RESOLUTION VOTE CONCLUDED";
 
       const cardW = Math.min(640, bounds.w * 0.86);
       const cardH = Math.min(350, bounds.h * 0.90);
@@ -352,11 +352,11 @@
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
       const isReduced = window.THEME.prefersReducedMotion();
 
-      const noticeTitle = payload.notice_title || payload.title || "Statutory Legal Notice";
-      const sender = payload.sender || "Issuing Statutory Authority";
-      const recipient = payload.recipient || "Notice Addressee / Taxpayer";
-      const dispatchMode = payload.dispatch_mode || "Registered Post with Acknowledgment Due";
-      const statusText = payload.status || "NOTICE DULY SERVED & ACKNOWLEDGED";
+      const noticeTitle = payload.notice_title || payload.title || "Formal Notice";
+      const sender = payload.sender || "Issuing Party";
+      const recipient = payload.recipient || "Addressee";
+      const dispatchMode = payload.dispatch_mode || "Registered Dispatch";
+      const statusText = payload.status || "FORMAL NOTICE DISPATCHED";
 
       const stationW = Math.min(220, bounds.w * 0.26);
       const stationH = 120;
@@ -501,9 +501,9 @@
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
       const isReduced = window.THEME.prefersReducedMotion();
 
-      const title = payload.penalty_title || payload.title || "Statutory Penalty & Fine Notice";
-      const reason = payload.reason || "Willful Non-Compliance & Statutory Default";
-      const statusText = payload.status || "STATUTORY DEMAND ORDER ISSUED";
+      const title = payload.penalty_title || payload.title || "Statutory Demand Notice";
+      const reason = payload.reason || "Statutory Non-Compliance Notice";
+      const statusText = payload.status || "STATUTORY DEMAND ISSUED";
 
       // Ledger row items
       const baseDemandStr = payload.base_demand || payload.tax_amount || "₹50,00,000";
@@ -512,9 +512,9 @@
       const totalStr = payload.total_amount || "₹1,09,00,000";
 
       const rows = [
-        { label: "1. Basic Statutory Output Demand", val: baseDemandStr },
-        { label: "2. Statutory Penalty (100% Demand)", val: penaltyStr },
-        { label: "3. Statutory Interest under Section 50", val: interestStr }
+        { label: payload.row1_label || "1. Primary Assessed Demand", val: baseDemandStr },
+        { label: payload.row2_label || "2. Prescribed Statutory Penalty", val: penaltyStr },
+        { label: payload.row3_label || "3. Statutory Interest Component", val: interestStr }
       ];
 
       const cardW = Math.min(620, bounds.w * 0.85);
@@ -598,7 +598,7 @@
       ctx.fillStyle = themeColors.textPrimary;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText("TOTAL STATUTORY REVENUE DEMAND", cardX + 28, totalY + 22);
+      ctx.fillText(payload.total_label || "TOTAL STATUTORY DEMAND", cardX + 28, totalY + 22);
 
       const fmtTotal = window.SHARED_DRAW.formatIndianCurrency(totalStr);
       ctx.font = window.THEME.typography.monoStat;
@@ -633,16 +633,16 @@
       const effectiveP = isSettle ? 1.0 : window.TWEEN.remap(p, 0.15, 0.65, 0, 1);
       const isReduced = window.THEME.prefersReducedMotion();
 
-      const title = payload.waterfall_title || payload.title || "Statutory Priority of Distribution";
+      const title = payload.waterfall_title || payload.title || "Statutory Priority Distribution";
       const corpusStr = payload.realized_corpus || payload.corpus || "₹5,00,00,000";
-      const statusText = payload.status || "ORDER OF PRIORITY SATISFIED";
+      const statusText = payload.status || "PRIORITY DISTRIBUTION COMPLETE";
 
       const tiers = payload.tiers || [
-        { label: "1. Insolvency Resolution & Liquidation Costs", amount: "₹50,00,000", settled: true },
-        { label: "2. Secured Creditors & Workmen Dues (24m)", amount: "₹2,50,00,000", settled: true },
-        { label: "3. Unpaid Employee Wages (12m)", amount: "₹1,00,00,000", settled: true },
-        { label: "4. Financial Debts of Unsecured Creditors", amount: "₹1,00,00,000", settled: true },
-        { label: "5. Government Dues & Remaining Debts", amount: "₹0 (Exhausted)", settled: false }
+        { label: "Step 1: Priority Tier I", amount: "₹50,00,000", settled: true },
+        { label: "Step 2: Priority Tier II", amount: "₹2,50,00,000", settled: true },
+        { label: "Step 3: Priority Tier III", amount: "₹1,00,00,000", settled: true },
+        { label: "Step 4: Priority Tier IV", amount: "₹1,00,00,000", settled: true },
+        { label: "Step 5: Priority Tier V", amount: "₹0", settled: false }
       ];
 
       const cardW = Math.min(640, bounds.w * 0.86);

@@ -363,9 +363,16 @@ class TestFrameReproducibility(unittest.TestCase):
 
     def test_scrub_order_independence_aba(self):
         """Requirement 1 & 5: Renders frame A, then B, then A again across ALL 16 built engines, asserting A is pixel-identical both times."""
+        import time
         total_slides = len(SAMPLE_PRESENTATION["scenes"])
         self.assertEqual(total_slides, 16, "Must test all 16 built engines for scrub-order independence")
+        print("\n" + "="*75)
+        print("PER-ENGINE REPRODUCIBILITY & TIMING REPORT:")
+        print("="*75)
         for slide_idx in range(total_slides):
+            action_type = SAMPLE_PRESENTATION['scenes'][slide_idx]['lines'][0]['action_type']
+            t0 = time.perf_counter()
+
             # Frame A: slide at 1200ms
             img_A1 = self.page.evaluate(f"""() => {{
                 window.PRESENTATION_PLAYER.renderFrame({slide_idx}, 1200);
@@ -383,13 +390,20 @@ class TestFrameReproducibility(unittest.TestCase):
                 return document.getElementById('stage_canvas').toDataURL('image/png');
             }}""")
 
-            self.assertEqual(img_A1, img_A2, f"Slide {slide_idx} ({SAMPLE_PRESENTATION['scenes'][slide_idx]['lines'][0]['action_type']}): Scrubbing backwards to Frame A must yield 100% pixel-identical buffer")
+            dt_ms = (time.perf_counter() - t0) * 1000
+            print(f"  * Engine {slide_idx+1:02d} ({action_type:<19}): 3 frames evaluated in {dt_ms:.2f}ms (Scrub A->B->A)")
+
+            self.assertEqual(img_A1, img_A2, f"Slide {slide_idx} ({action_type}): Scrubbing backwards to Frame A must yield 100% pixel-identical buffer")
 
     def test_settle_hold_65_and_100_pixel_identical(self):
         """Requirement 2 & 5: The 65% and 100% frames are pixel-identical inside mainStageRegion across ALL 16 built engines."""
+        import time
         total_slides = len(SAMPLE_PRESENTATION["scenes"])
         self.assertEqual(total_slides, 16, "Must test all 16 built engines for settle hold identity")
         for slide_idx in range(total_slides):
+            action_type = SAMPLE_PRESENTATION['scenes'][slide_idx]['lines'][0]['action_type']
+            t0 = time.perf_counter()
+
             img_stage_65, img_stage_100 = self.page.evaluate(f"""() => {{
                 const player = window.PRESENTATION_PLAYER;
                 const slide = player.data.scenes[{slide_idx}];
@@ -419,10 +433,13 @@ class TestFrameReproducibility(unittest.TestCase):
                 return [data65, data100];
             }}""")
 
+            dt_ms = (time.perf_counter() - t0) * 1000
+            print(f"  * Engine {slide_idx+1:02d} ({action_type:<19}): 2 frames evaluated in {dt_ms:.2f}ms (Settle 65%==100%)")
+
             self.assertEqual(
                 img_stage_65,
                 img_stage_100,
-                f"Slide {slide_idx} ({SAMPLE_PRESENTATION['scenes'][slide_idx]['lines'][0]['action_type']}): mainStageRegion at 65% and 100% must be 100% pixel-identical"
+                f"Slide {slide_idx} ({action_type}): mainStageRegion at 65% and 100% must be 100% pixel-identical"
             )
 
     def test_speed_change_continuity(self):

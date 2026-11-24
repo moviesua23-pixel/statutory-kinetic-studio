@@ -26,7 +26,7 @@
       const title = payload.title || "Statutory Instrument / Agreement";
       const parties = payload.parties || "Party A & Party B";
       const keyTerm = payload.key_term || "Binding Statutory Covenant & Conditions";
-      const stampText = payload.stamp_text || "VALID & BINDING";
+      const stampText = payload.stamp_text || "EXECUTED RECORD";
 
       // Centered parchment document
       const docW = Math.min(520, bounds.w * 0.60);
@@ -115,7 +115,8 @@
       ctx.stroke();
 
       const maxKeyTermW = docW - 72;
-      let displayKeyTerm = `KEY TERM: ${keyTerm}`;
+      const termPrefix = payload.term_label ? `${payload.term_label}: ` : "";
+      let displayKeyTerm = `${termPrefix}${keyTerm}`;
       ctx.font = window.THEME.typography.captionBold;
       if (ctx.measureText(displayKeyTerm).width > maxKeyTermW) {
         while (displayKeyTerm.length > 12 && ctx.measureText(displayKeyTerm + "…").width > maxKeyTermW) {
@@ -220,7 +221,7 @@
       const partyA = payload.party_a || "Party A (Initiator / Claimant)";
       const partyB = payload.party_b || "Party B (Counterparty / Assessee)";
       const consentRule = payload.consent_rule || payload.rule || "Statutory Mutual Assent / Concurrence";
-      const statusText = payload.status || "Statutory Criteria Satisfied";
+      const statusText = payload.status || "BILATERAL ACCORD CONCLUDED";
 
       const cardW = Math.min(260, bounds.w * 0.30);
       const cardH = 140;

@@ -1,0 +1,238 @@
+{
+  "act_name": "Central Goods and Services Tax Act, 2017",
+  "section_code": "Section 16",
+  "core_doctrine": "Eligibility and Conditions for Input Tax Credit (ITC)",
+  "story_summary": "M/s Alpha (Recipient) purchases goods for ₹1,00,00,000 and claims ₹18,00,000 ITC, but the transaction faces scrutiny because the supplier failed to remit the tax to the Government.",
+  "scenes": [
+    {
+      "id": 1,
+      "screenplay_phase": "PHASE 1: STORY EXPOSITION",
+      "layout_archetype": "layout_bilateral_split",
+      "layout_payload": {
+        "left_label": "M/s Alpha (Recipient)",
+        "left_role": "Registered Taxable Person",
+        "right_label": "M/s Beta (Supplier)",
+        "right_role": "Registered Vendor"
+      },
+      "story_point_ref": "Transaction Inception",
+      "tab_title": "Commercial Supply",
+      "tag": "BUSINESS TRANSACTION",
+      "dialogue": "നമസ്കാരം! ഇന്ന് നമ്മൾ പഠിക്കുന്നത് CGST Act-ലെ ഏറ്റവും സുപ്രധാനമായ Section 16-നെ കുറിച്ചാണ്. ഇവിടെ M/s Alpha എന്ന ബിസിനസ്സ് സ്ഥാപനം, M/s Beta എന്ന സപ്ലയറിൽ നിന്നും ₹1 കോടി രൂപയുടെ ഇൻഡസ്ട്രിയൽ ഗുഡ്സ് വാങ്ങാൻ തീരുമാനിക്കുന്നു. ഈ ഗുഡ്സ് അവരുടെ ബിസിനസ്സ് ആവശ്യങ്ങൾക്ക് വേണ്ടിയുള്ളതാണ്, അതുകൊണ്ട് തന്നെ ഇതിന്മേൽ അടയ്ക്കുന്ന GST തിരികെ ക്രെഡിറ്റായി ലഭിക്കാൻ ഇവർ അർഹരാണ്.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "M/s Alpha enters into a purchase agreement with M/s Beta for the supply of industrial inventory worth ₹1,00,00,000.",
+          "line_title": "Commercial Accord",
+          "duration_ms": 9969,
+          "action_type": "handshake_consent",
+          "action_payload": {
+            "party_a": "M/s Alpha (Recipient)",
+            "party_b": "M/s Beta (Supplier)",
+            "consent_rule": "Bilateral Supply Agreement",
+            "status": "CONSENSUS AD IDEM REACHED",
+            "party_a_role": "Purchaser",
+            "party_b_role": "Vendor"
+          }
+        },
+        {
+          "line_num": 2,
+          "sentence": "M/s Alpha remits the base consideration of ₹1,00,00,000 along with the applicable GST of ₹18,00,000.",
+          "line_title": "Payment Remittance",
+          "duration_ms": 8307,
+          "action_type": "money_transfer",
+          "action_payload": {
+            "from_actor": "M/s Alpha",
+            "to_actor": "M/s Beta",
+            "amount": "₹1,18,00,000",
+            "numeric_value": 11800000,
+            "description": "Base Price + GST (18%)",
+            "from_action": "Paying Invoice Value",
+            "settled_status": "PAYMENT TRANSMITTED TO SUPPLIER"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "screenplay_phase": "PHASE 1: STORY EXPOSITION",
+      "layout_archetype": "layout_sequential_pipeline",
+      "layout_payload": {
+        "stages": [
+          {
+            "label": "1. Invoice Issued",
+            "detail": "Tax Invoice No: GST/001"
+          },
+          {
+            "label": "2. Goods Delivered",
+            "detail": "Physical supply received by Alpha"
+          },
+          {
+            "label": "3. Supplier Default",
+            "detail": "Beta fails to remit tax to Government"
+          }
+        ]
+      },
+      "story_point_ref": "Documentary & Physical Flow",
+      "tab_title": "Compliance & Breach",
+      "tag": "OPERATIONAL REALITY",
+      "dialogue": "സപ്ലയർ ഒരു ടാക്സ് ഇൻവോയ്സ് നൽകുകയും ഗുഡ്സ് ആൽഫയുടെ വെയർഹൗസിൽ എത്തിക്കുകയും ചെയ്തു. എന്നാൽ ഇവിടെ ഒരു പ്രശ്നം സംഭവിക്കുന്നു. ആൽഫ ടാക്സ് തുക സപ്ലയർക്ക് നൽകിയെങ്കിലും, സപ്ലയർ ആ തുക ഗവൺമെന്റിലേക്ക് അടയ്ക്കുന്നതിൽ വീഴ്ച വരുത്തി. ഈ ഒരു കാരണത്താൽ ആൽഫയുടെ 18 ലക്ഷം രൂപയുടെ Input Tax Credit റിസ്കിലായിരിക്കുന്നു.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "Supplier Beta issues a valid Tax Invoice and the physical goods are transported to Alpha's facility.",
+          "line_title": "Possession & Delivery",
+          "duration_ms": 8861,
+          "action_type": "goods_transport",
+          "action_payload": {
+            "origin": "Beta's Warehouse",
+            "destination": "Alpha's Premises",
+            "cargo": "Industrial Inventory",
+            "delivery_status": "PHYSICAL POSSESSION TRANSFERRED"
+          }
+        },
+        {
+          "line_num": 2,
+          "sentence": "Despite collecting GST, Supplier Beta defaults on depositing the tax of ₹18,00,000 to the Government exchequer.",
+          "line_title": "Statutory Default",
+          "duration_ms": 8861,
+          "action_type": "breach_block",
+          "action_payload": {
+            "event_title": "Tax Remittance Default",
+            "cause": "Non-payment of tax by supplier under Sec 16(2)(c)",
+            "consequence": "ITC Eligibility of Recipient Triggered for Review"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_quadrant_grid",
+      "layout_payload": {
+        "quadrants": [
+          {
+            "title": "Sec 16(2)(a): Invoice",
+            "body": "Possession of Tax Invoice or Debit Note.",
+            "accent": "indigo"
+          },
+          {
+            "title": "Sec 16(2)(b): Receipt",
+            "body": "Physical receipt of Goods or Services.",
+            "accent": "emerald"
+          },
+          {
+            "title": "Sec 16(2)(c): Payment",
+            "body": "Tax must be actually paid to Govt by supplier.",
+            "accent": "amber"
+          },
+          {
+            "title": "Sec 16(2)(d): Return",
+            "body": "Recipient must furnish Return under Sec 39.",
+            "accent": "crimson"
+          }
+        ]
+      },
+      "story_point_ref": "Four Pillars of ITC",
+      "tab_title": "The 4 Conditions",
+      "tag": "STATUTORY MANDATES",
+      "dialogue": "ഇനി നമുക്ക് നിയമം നോക്കാം. Section 16(2) അനുസരിച്ച് ITC ലഭിക്കാൻ 4 പ്രധാന കണ്ടീഷനുകൾ ഉണ്ട്. ഒന്ന്, ഇൻവോയ്സ് കൈവശം വേണം. രണ്ട്, ഗുഡ്സ് ലഭിച്ചിരിക്കണം. മൂന്ന്, സപ്ലയർ ആ ടാക്സ് ഗവൺമെന്റിലേക്ക് അടച്ചിരിക്കണം. നാല്, റെസിപ്പിയന്റ് റിട്ടേൺ ഫയൽ ചെയ്തിരിക്കണം. ഇതിൽ മൂന്നാമത്തെ കണ്ടീഷൻ സപ്ലയറുടെ ഭാഗത്തുനിന്നുള്ള വീഴ്ചയായതിനാൽ റെസിപ്പിയന്റിന് ITC നിഷേധിക്കപ്പെടാം.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "To claim ITC, Section 16 mandates the cumulative satisfaction of four essential statutory ingredients.",
+          "line_title": "ITC Checklist",
+          "duration_ms": 7753,
+          "action_type": "condition_checklist",
+          "action_payload": {
+            "title": "Section 16(2) Mandatory Criteria",
+            "conditions": [
+              {
+                "text": "1. Possession of Invoice",
+                "satisfied": true
+              },
+              {
+                "text": "2. Receipt of Goods",
+                "satisfied": true
+              },
+              {
+                "text": "3. Tax Paid to Govt",
+                "satisfied": false
+              },
+              {
+                "text": "4. Filing of Return",
+                "satisfied": true
+              }
+            ],
+            "verdict": "ELIGIBILITY REVOKED DUE TO CONDITION 3"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_hero_stage",
+      "layout_payload": {
+        "hero_headline": "Statutory Recovery & Interest",
+        "focal_element": "ITC Reversal Action"
+      },
+      "story_point_ref": "Fiscal Impact",
+      "tab_title": "Quantum of Reversal",
+      "tag": "PENALTY & INTEREST",
+      "dialogue": "സപ്ലയർ ടാക്സ് അടയ്ക്കാത്തതിനാൽ, ആൽഫ എടുത്ത 18 ലക്ഷം രൂപയുടെ ക്രെഡിറ്റ് ഗവൺമെന്റ് തിരിച്ചെടുക്കും. വെറുതെ തിരിച്ചെടുക്കുക മാത്രമല്ല, ആ തുകയ്ക്ക് നിശ്ചിത ശതമാനം പലിശയും നൽകേണ്ടി വരും. ഇതാണ് സെക്ഷൻ 16-ന്റെ കാഠിന്യം.",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The department issues a notice for reversal of ITC amounting to ₹18,00,000 along with statutory interest.",
+          "line_title": "Statutory Demand",
+          "duration_ms": 8861,
+          "action_type": "penalty_fine",
+          "action_payload": {
+            "penalty_title": "ITC Reversal Notice",
+            "reason": "Non-compliance with Sec 16(2)(c)",
+            "base_demand": "₹18,00,000",
+            "penalty_amount": "₹0",
+            "interest_amount": "₹3,24,000",
+            "total_amount": "₹21,24,000",
+            "numeric_value": 2124000,
+            "row1_label": "Input Tax Credit Claimed",
+            "row2_label": "Penalty (if applicable)",
+            "row3_label": "Interest @ 18% (Estimated)",
+            "total_label": "TOTAL RECOVERY DEMAND",
+            "status": "DEMAND ISSUED TO RECIPIENT"
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "screenplay_phase": "PHASE 2: STATUTORY BREAKDOWN",
+      "layout_archetype": "layout_precedent_parchment",
+      "layout_payload": {
+        "court": "SUPREME COURT OF INDIA / HIGH COURTS",
+        "case_name": "Arise India Ltd vs. Commissioner of Trade & Taxes",
+        "year": "Ref Interpretation",
+        "ratio_headline": "Innocent Purchasers cannot be punished for Supplier's Default if Transaction is Bona Fide."
+      },
+      "story_point_ref": "Judicial View",
+      "tab_title": "Legal Precedent",
+      "tag": "JUDICIAL RATIO",
+      "dialogue": "നിയമം കടുപ്പമാണെങ്കിലും, പല കോടതി വിധികളും പറയുന്നത് ഒരു നിരപരാധിയായ വാങ്ങുന്നയാൾ സപ്ലയറുടെ തെറ്റിന് ശിക്ഷിക്കപ്പെടരുത് എന്നാണ്. എന്നിരുന്നാലും, സെക്ഷൻ 16 പ്രകാരം കണിശമായ നിയമവ്യവസ്ഥ നിലനിൽക്കുന്നു. അതിനാൽ, ബിസിനസ്സുകൾ വിശ്വസ്തരായ സപ്ലയർമാരെ മാത്രം തിരഞ്ഞെടുക്കാൻ ശ്രദ്ധിക്കണം. നന്ദി!",
+      "lines": [
+        {
+          "line_num": 1,
+          "sentence": "The judicial ratio emphasizes that while conditions are mandatory, the law must balance the rights of bona fide purchasers.",
+          "line_title": "Final Verdict",
+          "duration_ms": 10523,
+          "action_type": "gavel_verdict",
+          "action_payload": {
+            "court_name": "HON'BLE HIGH COURT / SC",
+            "case_citation": "Doctrine of Vicarious Default",
+            "ratio": "ITC is a statutory right subject to strict conditions under Sec 16(2).",
+            "badge": "LEGAL PRECEDENT"
+          }
+        }
+      ]
+    }
+  ]
+}
